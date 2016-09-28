@@ -6,7 +6,6 @@
 
 /* 
  * File:   tools.h
- * Author: krefl
  *
  * Created on September 28, 2016, 9:13 PM
  */
