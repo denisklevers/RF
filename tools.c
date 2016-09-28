@@ -13,6 +13,7 @@ double** createDoubleArray(int Nr, int Nc) {
     
     double **A = (double**) malloc(Nr * sizeof(double *));
     
+    
     for (i=0; i<Nr; i++)
     {
         A[i] = (double*) malloc(Nc * sizeof(double));

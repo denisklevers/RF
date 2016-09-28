@@ -21,5 +21,6 @@ void     freeDoubleArray(double** A, int Nr);
 void     loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
 
 
+
 #endif /* TOOLS_H */
 
