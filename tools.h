@@ -14,8 +14,8 @@
 #define TOOLS_H
 
 // Array tools
-double** createDoubleArray(int Nr, int Nc);
-void     freeDoubleArray(double** A, int Nr);
+double** createDoubleArray2D(int Nr, int Nc);
+void     freeDoubleArray2D(double** A, int Nr);
 
 // .CSV tools
 void     loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-double** createDoubleArray(int Nr, int Nc) {
+double** createDoubleArray2D(int Nr, int Nc) {
     int i;
     
     double **A = (double**) malloc(Nr * sizeof(double *));
@@ -22,7 +22,7 @@ double** createDoubleArray(int Nr, int Nc) {
     return A;
 }
 
-void freeDoubleArray(double** A, int Nr) {
+void freeDoubleArray2D(double** A, int Nr) {
     int i;
     
     for(i=0; i < Nr; i++) {
@@ -34,18 +34,24 @@ void freeDoubleArray(double** A, int Nr) {
 void loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos) {
     char buffer[1024*8];
     char *line,*record;
-    int j;
-    
-    int i = startPos;
+    int i,j;
     
     FILE *fstream = fopen(filename, "r");
 
-    for(i; i < Nr; i++) 
+    // Ignore rows < startPos
+    for(i = 0; i < startPos; i++) 
+    {
+        fgets(buffer,sizeof(buffer),fstream);
+    }
+    
+    // Read rows
+    for(i = 0; i < Nr; i++) 
     {
         line = fgets(buffer,sizeof(buffer),fstream);
-   
+        
         record = strtok(line,",");
         
+        // Read cols
         for(j=0; j < Nc; j++) {
           
             M[i][j] = atof(record);
