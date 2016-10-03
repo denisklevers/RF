@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "hashmap.h"
+#include "tools.h"
+
 double** createDoubleArray2D(int Nr, int Nc) {
     int i;
     
@@ -59,4 +62,31 @@ void loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos) {
             record = strtok(NULL,",");
         }
     }
+}
+    
+IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol) {
+    double** M = createDoubleArray2D(Nr,Nc);
+    
+    loadCSV(filename, M, Nr, Nc, startPos);
+    
+    IndexedData ret;
+    ret.data   = M;
+    ret.keyCol = keyCol;
+    ret.index  = hashmap<int>();
+    
+    // Index data
+    int i;
+    int lastKey;
+    
+    for(i=0; i < Nr; i++) 
+    {
+        if(M[i][keyCol]!=lastKey) 
+        {
+            lastKey = M[i][keyCol];
+            ret.index.add(lastKey,i);
+          
+        }
+    }
+    
+    return ret;
 }

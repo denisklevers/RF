@@ -14,7 +14,7 @@
 template <class A> class hashmap
 {
     public:
-        
+       
         /* Adds key -> value mapping
          * Overrides key if already exists
          */
@@ -44,11 +44,10 @@ template <class A> class hashmap
 
             HASH_FIND_INT(Maps, &key, m);
     
-            A *pointer = (A*) malloc(sizeof *pointer);
-            
             if(m == NULL) {
                 return NULL;
             } else {
+                A *pointer = (A*) malloc(sizeof *pointer);
                 *pointer = m->value;
                 return pointer;
             }
@@ -91,6 +90,35 @@ template <class A> class hashmap
             return HASH_COUNT(Maps);
         }
 
+        A *next() {
+            struct Map *m;
+           
+            if(iteratorPos==NULL) {
+                m = (Map*) Maps;
+              
+            } else {
+                m = (Map*) iteratorPos->hh.next;
+            }
+            
+            if(m == NULL) {
+                printf("BLAnull\n");
+            
+                return NULL;
+            } else {
+                A *pointer = (A*) malloc(sizeof *pointer);
+            
+                *pointer = m->value;
+                
+                iteratorPos = m;
+                
+                return pointer;
+            }
+        }
+        
+        void resetIterator() {
+            iteratorPos = NULL;
+        }
+        
     private:
         
         struct Map {
@@ -101,6 +129,8 @@ template <class A> class hashmap
     
         struct Map* Maps = NULL;
     
+        Map* iteratorPos = NULL;
+        
 };
 
 #endif /* HASHMAP_H */
