@@ -8,13 +8,28 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#include <stdio.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <random>
+#include <iostream>
+
 #include "uthash.h"
+
+typedef std::mt19937 MyRNG; // Define Random Engine to be Mersenne Twister
 
 template <class A> class hashmap
 {
     public:
-       
+        /*
+         * Constructor
+         *
+         */
+        hashmap<A>() {
+            rng.seed(seed_val);
+        }
+        
         /* Adds key -> value mapping
          * Overrides key if already exists
          */
@@ -90,6 +105,10 @@ template <class A> class hashmap
             return HASH_COUNT(Maps);
         }
 
+        
+        /*
+         * Retrieves next key value
+         */
         A *next() {
             struct Map *m;
            
@@ -101,8 +120,6 @@ template <class A> class hashmap
             }
             
             if(m == NULL) {
-                printf("BLAnull\n");
-            
                 return NULL;
             } else {
                 A *pointer = (A*) malloc(sizeof *pointer);
@@ -115,6 +132,41 @@ template <class A> class hashmap
             }
         }
         
+        /*
+         * Returns a random key value
+         */
+        A *random() {
+            int s = size();
+            
+            std::uniform_int_distribution<uint32_t> unif_dist(0, s);
+            
+            int r = unif_dist(rng);
+            
+            std::cout << r << std::endl;
+            
+            struct Map *m = Maps;
+            
+            // Get rth element
+            for(int i = 1; i < r; i++) {
+                m = (Map*) m->hh.next;
+            }
+            
+            if(m == NULL) {
+                return NULL;
+            } else {
+                A *pointer = (A*) malloc(sizeof *pointer);
+            
+                *pointer = m->value;
+                
+                iteratorPos = m;
+                
+                return pointer;
+            }
+        }
+        
+        /*
+         * Sets iterator to first added element
+         */
         void resetIterator() {
             iteratorPos = NULL;
         }
@@ -130,6 +182,10 @@ template <class A> class hashmap
         struct Map* Maps = NULL;
     
         Map* iteratorPos = NULL;
+        
+        // Random number generator ingredients
+        MyRNG rng;  
+        uint32_t seed_val = std::time(0); // use unix timestamp as seed 
         
 };
 
