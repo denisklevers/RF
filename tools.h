@@ -16,11 +16,17 @@
 #include "hashmap.h"
 
 // Structs
+struct intint {
+    int A;
+    int B;
+};
+
 struct IndexedData{
     double** data;
     int keyCol;
-    hashmap<int> index;
+    hashmap<intint> index;
 };
+
 
 // Array tools
 double** createDoubleArray2D(int Nr, int Nc);

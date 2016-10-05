@@ -142,8 +142,6 @@ template <class A> class hashmap
             
             int r = unif_dist(rng);
             
-            std::cout << r << std::endl;
-            
             struct Map *m = Maps;
             
             // Get rth element

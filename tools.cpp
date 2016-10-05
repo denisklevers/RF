@@ -72,20 +72,27 @@ IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int st
     IndexedData ret;
     ret.data   = M;
     ret.keyCol = keyCol;
-    ret.index  = hashmap<int>();
+    ret.index  = hashmap<intint>();
     
     // Index data
-    int i;
-    int lastKey;
+    int c = 0;
+    int lastKey = M[0][keyCol];
     
-    for(i=0; i < Nr; i++) 
+    for(int i=1; i < Nr; i++) 
     {
-        if(M[i][keyCol]!=lastKey) 
+        if((M[i][keyCol]!=lastKey)||(i == Nr-1)) 
         {
+            intint len;
+            len.A = i;
+            len.B = c;
+           
+            ret.index.add(lastKey, len);
+            
             lastKey = M[i][keyCol];
-            ret.index.add(lastKey,i);
-          
+            c = 0;
         }
+        
+        c++;
     }
     
     return ret;
