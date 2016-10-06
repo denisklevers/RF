@@ -4,12 +4,6 @@
  * and open the template in the editor.
  */
 
-/* 
- * File:   main.cpp
- * Author: krefl
- *
- * Created on September 28, 2016, 8:43 PM
- */
 
 #include <cstdlib>
 #include <stdio.h>
@@ -30,25 +24,36 @@ int main() {
     
     // Init data
     int Nc = 9;
-    int Nr = 10000;
+    int Nr = 100000;
     
     IndexedData data = loadAndIndexDataFromCSV("/home/krefl/storage/data/NY_M_MRK_USD.csv", Nr, Nc, 1, 1);
     
     simu Sim = simu(&data, 0, 100);
-    
+   
     state S = Sim.next(1);
-    S = Sim.next(0);
-    S = Sim.next(0);
-    S = Sim.next(0);
-    S = Sim.next(0);
-    S = Sim.next(3);
-    
-    
-    
-    cout << S.upnl << endl;
-    cout << S.rpnl << endl; 
    
+    /*
+    cout << S.toString() << endl;
+    
+    S.r = 1000;
+    S = Sim.next(S, 0);
+    
+    cout << S.toString() << endl;
+    
+    S = Sim.next(0);
+    S = Sim.next(0);
    
+    cout << S.toString() << endl;
+    
+    */
+    
+    int c = 0;
+    while(!(Sim.EoD())) {
+        S = Sim.next(0);
+        cout << S.toString() << endl;
+        c++;
+    } 
+    
     cout << "Done!";
     
     return 0;
