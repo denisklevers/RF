@@ -22,13 +22,6 @@ typedef std::mt19937 MyRNG; // Define Random Engine to be Mersenne Twister
 template <class A> class hashmap
 {
     public:
-        /*
-         * Constructor
-         *
-         */
-        hashmap<A>() {
-            rng.seed(seed_val);
-        }
         
         /* Adds key -> value mapping
          * Overrides key if already exists
@@ -181,9 +174,8 @@ template <class A> class hashmap
     
         Map* iteratorPos = NULL;
         
-        // Random number generator ingredients
-        MyRNG rng;  
-        uint32_t seed_val = std::time(0); // use unix timestamp as seed 
+        // Random number generator (seeded with unix time)
+        MyRNG rng = MyRNG(std::time(0));  
         
 };
 

@@ -7,9 +7,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+#include <random>
 #include "hashmap.h"
 #include "tools.h"
+
+
+coinFlipper::coinFlipper() {
+    coinFlipper(0.5);
+}
+
+coinFlipper::coinFlipper(double bias) {
+    p = bias;
+    
+    rng = std::mt19937(std::time(0));
+}
+
+bool coinFlipper::coinFlip() {
+    std::uniform_real_distribution<double> unif_dist(0, 1);
+        
+    return (unif_dist(rng) < p) ? 1 : 0 ;
+}
+    
+
 
 double** createDoubleArray2D(int Nr, int Nc) {
     int i;
@@ -33,6 +52,7 @@ void freeDoubleArray2D(double** A, int Nr) {
     }
     
 }
+
 
 void loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos) {
     char buffer[1024*8];
