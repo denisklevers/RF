@@ -12,70 +12,97 @@
 #include "tools.h"
 #include <string>
 
-struct MarketData {
-    double** M;
-};
 
 struct pfEntry {
-    int pos;
-    double EP;
-    int entryHM;
+    int pos, entryHM;
+    double EP;    
 };
 
-
-struct state {
-    int r; // Current row pos (as offset of Day)
-    
-    double upnl;
-    double rpnl;
-   
-    pfEntry PF;
-    
-    //MarketData MD;
+struct order {
+    int action;
+    int lifetime;
+    double LMT;
     
     std::string toString() {
-        std::string s = "[S] r: "+std::to_string(r)
-                       +" pos: "+std::to_string(PF.pos)
-                       +" upnl: "+std::to_string(upnl)
-                       +" rpnl: "+std::to_string(rpnl);
+        std::string s = "[O] a: "+std::to_string(action)
+                       +" l: "+std::to_string(lifetime)
+                       +" LMT: "+std::to_string(LMT);
         
         return s;
     }
 };
 
 
+struct state {
+    int day; // Row pos of day;
+    int r;   // Current absolute row pos
+    
+    double upnl;
+    double rpnl;
+   
+    pfEntry PF;
+    order* AO;
+    
+    std::string toString() {
+        std::string s = "[S] r: "+std::to_string(r-day)
+                       +" pos: "+std::to_string(PF.pos)
+                       +" upnl: "+std::to_string(upnl)
+                       +" rpnl: "+std::to_string(rpnl);
+             
+        if(AO!=NULL) {
+            s += "\n "+AO->toString();
+        }
+        
+        return s;
+    }
+};
+
+
+
+
 class simu {
 public:
-    simu(IndexedData* data, int firstMin, int posUnit);
-    void reset();           // Reset and start @ random day
+    simu(IndexedData* data, int firstMin, int posUnit, double fillRate);
+    void reset(int firstMin);          // Reset and start @ random day
     void reset(int day, int firstMin); // Reset and start @ day
-    state next(int action); // Next state under action taken
-                            // 0: do nothing
+    state next(order* O); // Next state under action taken
+                            // 0: do nothing (OR simply NULL pointer in)
                             // 1: go long 
                             // 2: go short
                             // 3: close 
+                            // 4: Cancel order
                             // Notes: *In current mechanics, if pos!=0 : 1=2=0.
                             //        *MKT only orders
     
     bool EoD();             // Returns TRUE if end-of-day reached
     
-    state next(state S, int action); // Takes S as current state and jumps to day offset r therein and executes action
+    state next(state S, order* O); // Takes S as current state and jumps to day offset r therein and executes action
     
 private:
     IndexedData* Data;
+    
     int N;     // # Elements @ day
     int Day;   // Row pos of day in data
     int lot;   // lot size to use
  
-    state S;
+    state S = {};
     
-    double commissions(int shares, int type); // Notes:
-                                              // (IB fixed| ToDo: Change to tiered, if extended to LMT orders)
-                                              // type 0: MKT BUY
-                                              // type 1: MKT SELL
-                                              // type 2: LMT BUY
-                                              // type 3: MKT SELL
-                                              
+    coinFlipper CF = NULL; // To determine if LMT order @ LMT gets filled / min
+    
+    bool processOrder(order* Oin, state* Sin); // Returns true if Oin filled
+    
+    /*
+     * Calculates commissions for order 
+     * (based on IB fees)
+     *
+     * type 0: BUY
+     * type 1: SELL
+     * 
+     * LMT  0: MKT order
+     *      1: LMT order
+     */
+    double commissions(int shares, double value, int type, bool LMT); 
+    
     
 };
 

@@ -26,34 +26,30 @@ int main() {
     int Nc = 9;
     int Nr = 100000;
     
-    IndexedData data = loadAndIndexDataFromCSV("/home/krefl/storage/data/NY_M_MRK_USD.csv", Nr, Nc, 1, 1);
+    IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
     
-    simu Sim = simu(&data, 0, 100);
+    simu Sim = simu(&data, 0, 50, 0.85);
+    order O = {1, 50, 0};
+    
+    state S = Sim.next(&O);
+    cout << S.toString() << endl;
    
-    state S = Sim.next(1);
-   
-    /*
+    S = Sim.next(NULL);
+    cout << S.toString() << endl;
+ 
+    S = Sim.next(NULL);
     cout << S.toString() << endl;
     
-    S.r = 1000;
-    S = Sim.next(S, 0);
-    
+    O = {1,50,data.data[S.r][4]+5};
+    S = Sim.next(&O);
     cout << S.toString() << endl;
-    
-    S = Sim.next(0);
-    S = Sim.next(0);
    
-    cout << S.toString() << endl;
     
-    */
-    
-    int c = 0;
     while(!(Sim.EoD())) {
-        S = Sim.next(0);
+        S = Sim.next(NULL);
         cout << S.toString() << endl;
-        c++;
     } 
-    
+  
     cout << "Done!";
     
     return 0;
