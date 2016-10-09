@@ -32,14 +32,13 @@ template <class A> class hashmap
                 remove(key);
             }
     
-            struct Map *m;
+            Map *m;
             
             m = (Map*) malloc(sizeof(struct Map));
             m -> key   = key;
             m -> value = val;
     
             HASH_ADD_INT(Maps, key, m);
-           
         }
         
         /*
@@ -48,16 +47,15 @@ template <class A> class hashmap
          */
         A *get(int key) {
             
-            struct Map *m;
+            Map *m;
 
             HASH_FIND_INT(Maps, &key, m);
-    
+            
             if(m == NULL) {
                 return NULL;
             } else {
-                A *pointer = (A*) malloc(sizeof *pointer);
-                *pointer = m->value;
-                return pointer;
+                 
+                return &m->value;
             }
         }
      
@@ -66,7 +64,7 @@ template <class A> class hashmap
          * 
          */
         bool exist(int key) {
-            struct Map *m;
+            Map *m;
 
             HASH_FIND_INT(Maps, &key, m);
             
@@ -79,7 +77,7 @@ template <class A> class hashmap
          */
         void remove(int key) {
             
-            struct Map *m;
+            Map *m;
 
             HASH_FIND_INT(Maps, &key, m);
             
@@ -97,17 +95,15 @@ template <class A> class hashmap
         int size() {
             return HASH_COUNT(Maps);
         }
-
-        
+   
         /*
          * Retrieves next key value
          */
         A *next() {
-            struct Map *m;
+            Map *m;
            
             if(iteratorPos==NULL) {
                 m = (Map*) Maps;
-              
             } else {
                 m = (Map*) iteratorPos->hh.next;
             }
@@ -115,13 +111,7 @@ template <class A> class hashmap
             if(m == NULL) {
                 return NULL;
             } else {
-                A *pointer = (A*) malloc(sizeof *pointer);
-            
-                *pointer = m->value;
-                
-                iteratorPos = m;
-                
-                return pointer;
+                return &m->value;
             }
         }
         
@@ -135,7 +125,7 @@ template <class A> class hashmap
             
             int r = unif_dist(rng);
             
-            struct Map *m = Maps;
+            Map *m = Maps;
             
             // Get rth element
             for(int i = 1; i < r; i++) {
@@ -145,13 +135,20 @@ template <class A> class hashmap
             if(m == NULL) {
                 return NULL;
             } else {
-                A *pointer = (A*) malloc(sizeof *pointer);
-            
-                *pointer = m->value;
-                
                 iteratorPos = m;
                 
-                return pointer;
+                return &m->value;
+            }
+        }
+        /*
+         * Removes all elements
+         */
+        void removeAll() {
+            Map *m, *tmp;
+
+            HASH_ITER(hh, Maps, m, tmp) {
+                HASH_DEL(Maps,m);  
+                free(m);            
             }
         }
         
@@ -162,6 +159,14 @@ template <class A> class hashmap
             iteratorPos = NULL;
         }
         
+        /*
+         * Deconstructor
+         */
+        ~hashmap() {
+            removeAll();
+        }
+        
+        
     private:
         
         struct Map {
@@ -170,7 +175,7 @@ template <class A> class hashmap
             UT_hash_handle hh;
         };
     
-        struct Map* Maps = NULL;
+        Map* Maps = NULL;
     
         Map* iteratorPos = NULL;
         
