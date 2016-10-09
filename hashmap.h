@@ -34,7 +34,7 @@ template <class A> class hashmap
     
             Map *m;
             
-            m = (Map*) malloc(sizeof(struct Map));
+            m = (Map*) malloc(sizeof(Map));
             m -> key   = key;
             m -> value = val;
     
