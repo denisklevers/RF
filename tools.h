@@ -14,22 +14,81 @@
 #define TOOLS_H
 
 #include "hashmap.h"
+#include <string>
+#include <cstdlib>
 
-// Structs
-struct intint {
+// Data structs
+struct intint 
+{
     int A;
     int B;
 };
 
-struct IndexedData{
+struct IndexedData
+{
     double** data;
+    int rows;
+    int cols;
+
     int keyCol;
     hashmap<intint> index;
+    
 };
+
+template <typename T> struct arr
+{
+    T* data;
+    int size;
+    
+    T &operator[](int i) {
+        if(i < size) {
+            return data[i];
+        } 
+        
+        throw std::out_of_range("arr::access - Index out of range");
+    }
+    
+    std::string toString() {
+        std::string s = "[ ";
+        
+        for(int i = 0; i < size; i++) {
+            s += std::to_string(data[i])+" ";
+        }
+        
+        return s+"]";
+    }
+};
+
 
 // Array tools
 double** createDoubleArray2D(int Nr, int Nc);
 void     freeDoubleArray2D(double** A, int Nr);
+
+template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
+   
+    arr<T> A;
+    arr<T> ret = (A1.size > A2.size) ? (A = A2, copy(A1)) : (A = A1, copy(A2));
+    
+    for(int i = 0; i < A.size; i++) {
+        ret.data[i] += A.data[i];
+    }
+    
+    return ret;
+}
+
+template<typename T> arr<T> copy(arr<T> A) {
+    T* newA = new T[A.size]; 
+   
+    for(int i = 0; i < A.size; i++) {
+        newA[i] = A.data[i];
+    }
+    
+    arr<T> RA = {newA, A.size};
+    
+    return RA;
+}
+
+
 
 // .CSV tools
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);

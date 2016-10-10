@@ -41,6 +41,10 @@ void simu::reset(int day, int firstMin) {
     S.r   = Day+firstMin;   
 }
 
+state simu::getState() {
+    return S;
+}
+
 bool simu::EoD() {
     return S.r-Day >= N;
 }
