@@ -33,6 +33,7 @@ struct IndexedData
     int keyCol;
     hashmap<intint> index;
     
+    // ToDo: get column. get column in range ... get row (copy) ...
 };
 
 template <typename T> struct arr
@@ -76,13 +77,18 @@ template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
     return ret;
 }
 
+template<typename T> arr<T> d_p(arr<T> A, int lag) {
+    //...
+    
+    return NULL;
+}
+
+
 template<typename T> arr<T> copy(arr<T> A) {
     T* newA = new T[A.size]; 
    
-    for(int i = 0; i < A.size; i++) {
-        newA[i] = A.data[i];
-    }
-    
+    std::copy(A.data, A.data+A.size, newA);
+        
     arr<T> RA = {newA, A.size};
     
     return RA;
