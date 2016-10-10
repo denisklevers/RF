@@ -44,7 +44,8 @@ struct state {
     order* AO;
     
     std::string toString() {
-        std::string s = "[S] r: "+std::to_string(r-day)
+        std::string s = "[S] d: "+std::to_string(day)
+                       +" r:"+std::to_string(r-day)
                        +" pos: "+std::to_string(PF.pos)
                        +" upnl: "+std::to_string(upnl)
                        +" rpnl: "+std::to_string(rpnl);
@@ -77,6 +78,7 @@ public:
     bool EoD();             // Returns TRUE if end-of-day reached
     
     state next(state S, order* O); // Takes S as current state and jumps to day offset r therein and executes action
+    state getState();
     
 private:
     IndexedData* Data;

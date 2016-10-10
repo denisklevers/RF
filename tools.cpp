@@ -12,6 +12,8 @@
 #include "tools.h"
 
 
+
+
 coinFlipper::coinFlipper() {
     coinFlipper(0.5);
 }
@@ -89,10 +91,7 @@ IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int st
     
     loadCSV(filename, M, Nr, Nc, startPos);
     
-    IndexedData ret;
-    ret.data   = M;
-    ret.keyCol = keyCol;
-    ret.index  = hashmap<intint>();
+    IndexedData ret = {M, Nr, Nc, keyCol, hashmap<intint>()};
     
     // Index data
     int c = 0;
