@@ -14,10 +14,6 @@
 
 
 
-coinFlipper::coinFlipper() {
-    coinFlipper(0.5);
-}
-
 coinFlipper::coinFlipper(double bias) {
     p = bias;
     

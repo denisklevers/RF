@@ -16,7 +16,7 @@
 #include "hashmap.h"
 #include <string>
 #include <cstdlib>
-
+#include <iostream>
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
  
@@ -30,18 +30,6 @@ struct intint
 {
     int A;
     int B;
-};
-
-struct IndexedData
-{
-    double** data;
-    int rows;
-    int cols;
-
-    int keyCol;
-    hashmap<intint> index;
-    
-    // ToDo: get column. get column in range ... get row (copy) ...
 };
 
 template <typename T> struct arr
@@ -58,7 +46,7 @@ template <typename T> struct arr
     }
     
     std::string toString() {
-        std::string s = "[ ";
+        std::string s = "L: "+std::to_string(size)+"\n[ ";
         
         for(int i = 0; i < size; i++) {
             s += std::to_string(data[i])+" ";
@@ -67,6 +55,64 @@ template <typename T> struct arr
         return s+"]";
     }
 };
+
+struct IndexedData
+{
+    double** data;
+    int rows;
+    int cols;
+
+    int keyCol;
+    hashmap<intint> index;
+    
+    arr<double> getCol(int col) 
+    {
+        return getCol(col, 0, rows);
+    }
+    
+    /*
+        Get column col
+        [r1,r2)
+     
+     */
+    arr<double> getCol(int col, int r1, int r2) 
+    {
+        
+        if(col < cols && r1 >= 0 && r2 <= rows && r1 <= r2) 
+        {
+          
+            // Prepare data
+            double* A = new double[r2-r1];
+            
+            for(int i = r1; i < r2; i++) {
+                A[i-r1] = data[i][col];
+            }
+       
+            return {A, r2-r1};
+        }
+        
+        throw std::out_of_range("IndexedData::getCol - Invalid indices");
+    }
+    
+    arr<double> getColOfDay(int col, int day) {
+        if(index.exist(day)) {
+            intint* pos = index.get(day);
+            
+            return getCol(col, pos->A, pos->A + pos->B);
+        }
+        
+        throw std::out_of_range("IndexedData::getDayCol - Invalid day");
+    }
+    
+    arr<double> getColOfRandomDay(int col) {
+        intint* pos = index.random();
+        
+        return getCol(col, pos->A, pos->A + pos->B);
+    }
+    
+};
+
+
 
 
 // Struct for Binner
