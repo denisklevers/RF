@@ -17,6 +17,7 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
  
@@ -45,6 +46,49 @@ template <typename T> struct arr
         throw std::out_of_range("arr::access - Index out of range");
     }
     
+    
+    void multiply(double C) {
+        for(int i = 0; i < size; i++) {
+            data[i] *= C;
+        }
+    }
+    
+    void divide(double C) {
+        if(C!=0) {
+            multiply(1/C);
+        }
+        
+        throw std::overflow_error("arr::divide - Divide by zero");
+    }
+    
+    void add(double C) {
+        for(int i = 0; i < size; i++) {
+            data[i] += C;
+        }
+    }
+    
+    void sub(double C) {
+        for(int i = 0; i < size; i++) {
+            data[i] -= C;
+        }
+    }
+    
+    void set(double C) {
+        for(int i = 0; i < size; i++) {
+            data[i] = C;
+        }
+    }
+    
+    /*
+        Applies the supplied function  element-wise 
+     *  f: <T> -> <T>
+     */
+    void apply(T (*function)(T)) {
+        for(int i = 0; i < size; i++) {
+            data[i] = function(data[i]);
+        }
+    }
+    
     std::string toString() {
         std::string s = "L: "+std::to_string(size)+"\n[ ";
         
@@ -54,6 +98,7 @@ template <typename T> struct arr
         
         return s+"]";
     }
+    
 };
 
 struct IndexedData
@@ -161,6 +206,8 @@ template<typename T> arr<T> copy(arr<T> A) {
     
     return RA;
 }
+
+
 
 
 // Print vector
