@@ -116,3 +116,105 @@ IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int st
     
     return ret;
 }
+
+// Random variable
+
+
+RandomVariable::RandomVariable(std::vector<int> Xs, std::vector<double> ps)
+{
+	samplespace =  Xs;
+	probs = ps;
+	
+	double sum;
+	for(int i=0; i< Xs.size(); i++)
+		sum+=ps[i];
+		
+	if(sum != 1)
+		std::cout << "Ill-defined probabilities: Sum is " << sum << "."<< std::endl;
+	
+	auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    rng = std::mt19937(seed);
+}
+
+
+double RandomVariable::inverseCDF(double p)
+{
+	int k = 0;
+	double test = 0;
+	while(test < p)
+	{
+		test+= probs[k];
+		k++;
+	}
+	
+	return samplespace.at(k-1);
+}
+
+
+int RandomVariable::OneDraw()
+{
+	std::uniform_real_distribution<double> distr(0.0, 1.0);
+	
+	return inverseCDF(distr(rng));
+}
+
+
+std::vector<int> RandomVariable::Sample(int SampleSize)
+{
+	std::uniform_real_distribution<double> distr(0.0, 1.0);
+	
+	std::vector<int> *ret =  new std::vector<int>(SampleSize);       // Put entire vector on heap
+	
+	for(int i=0; i<SampleSize; i++)
+	{
+		ret->at(i) = inverseCDF(distr(rng));
+	}
+	
+	return *ret;
+	
+}
+
+void RandomVariable::showData()
+{
+	std::cout<< "The random variable X is defined by the sample space and probabilities \n" ;
+	for(int i=0; i<samplespace.size(); i++)
+	{
+		std::cout<< "X:" << samplespace.at(i) << ", p(X=" << samplespace.at(i) << ")=" ;
+		std::cout<<  probs.at(i) << std::endl; 
+	}
+}
+
+double RandomVariable::mean()
+{
+	double sum=0;
+	
+	for(int i=0; i < samplespace.size(); i++)
+		sum += samplespace.at(i)*probs.at(i);
+	
+	return sum;
+	
+}; 												
+
+double RandomVariable::median()
+{
+	return samplespace.at(static_cast<int>(samplespace.size()/2)-1);
+}; 											
+
+
+double RandomVariable::var()
+{
+	double sum=0;
+	
+	for(int i=0; i < samplespace.size(); i++)
+		sum += (samplespace.at(i)-mean())*(samplespace.at(i)-mean())*probs.at(i);
+		
+	return sum;
+}; 
+
+// Printing Histogramm:
+
+void printH(std::vector<value_freq> histo)
+{
+	for(int i = 0; i< histo.size(); i++)
+		std::cout << "Value X = " << histo.at(i).value <<  " : " << histo.at(i).frequency << " (Frequency)" << std::endl;
+}
