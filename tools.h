@@ -60,6 +60,14 @@ template <typename T> struct arr
 };
 
 
+// Struct for Binner
+
+struct value_freq
+{
+	double value;
+	int frequency;
+};
+
 // Array tools
 double** createDoubleArray2D(int Nr, int Nc);
 void     freeDoubleArray2D(double** A, int Nr);
@@ -89,6 +97,16 @@ template<typename T> arr<T> copy(arr<T> A) {
 }
 
 
+// Print vector
+
+template <typename T>
+void printV(std::vector<T> vec)
+{
+	for(int i=0; i < vec.size() ; ++i)
+		std::cout << vec[i] << std::endl;
+}
+
+
 
 // .CSV tools
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
@@ -108,6 +126,70 @@ private:
     
     double p;
 };
+
+// Extension to template classes crashed in linker?
+
+class RandomVariable{
+public:
+	// RandomVariable();
+	// double DrawURN(double a, double b);
+	
+	RandomVariable(std::vector<int>, std::vector<double> );
+	~RandomVariable()
+	{	
+	std::cout << "A random discrete variable has been destroyed." << std::endl;
+	}
+	
+	double inverseCDF(double p);
+	
+	double mean(); 												//Only valid for numbers
+	double var(); 												//Only valid for numbers
+	double median(); 											
+	
+	int OneDraw();
+	std::vector<int> Sample(int SampleSize);
+	void showData();
+	
+private:
+	std::mt19937 rng;
+	
+	std::vector<int> samplespace;
+	std::vector<double> probs;
+	
+	// double a, b;
+};
+
+
+
+
+
+// Binning into Histogramm
+
+template <typename T>
+std::vector<value_freq> HistogramMaker(std::vector<T> &sample, std::vector<T> samplespace)
+{
+	int N = sample.size();
+	int k = samplespace.size();
+	
+	std::vector<value_freq> *ret= new std::vector<value_freq>(k);
+	
+	for(int i=0; i<k; i++)
+		ret->at(i).value = samplespace[i];
+	
+	for(int i=0; i<N; i++)
+	{
+		int pos = find(samplespace.begin(), samplespace.end(),sample[i]) - samplespace.begin();
+		std:: cout << pos << std::endl;
+		
+		ret->at(pos).frequency++;
+	}
+	
+	return *ret;
+}
+
+// Printing Histogramm:
+
+void printH(std::vector<value_freq> histo);
 
 
 #endif /* TOOLS_H */
