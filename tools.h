@@ -17,7 +17,15 @@
 #include <string>
 #include <cstdlib>
 
-// Data structs
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ 
+    Custom structures
+ 
+ 
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+
 struct intint 
 {
     int A;
@@ -69,7 +77,13 @@ struct value_freq
 	int frequency;
 };
 
-// Array tools
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ 
+    Array tools
+ 
+ 
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 double** createDoubleArray2D(int Nr, int Nc);
 void     freeDoubleArray2D(double** A, int Nr);
 
@@ -113,17 +127,32 @@ void printV(std::vector<T> vec)
 }
 
 
-
-// .CSV tools
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ 
+    .CSV tools
+ 
+ 
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ 
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
 IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
 
 
-// Probability tools
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 
+ 
+    Probability tools 
+ 
+ 
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+
 class coinFlipper {
 public:
-    coinFlipper();
-    coinFlipper(double bias);
+    coinFlipper(double bias = 0.5);
     bool coinFlip();
     
 private:
@@ -133,7 +162,6 @@ private:
     double p;
 };
 
-// Extension to template classes crashed in linker?
 
 class RandomVariable{
 public:
