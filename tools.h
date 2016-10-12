@@ -33,6 +33,12 @@ struct intint
     int B;
 };
 
+struct doubledouble
+{
+    double x;
+    double y;
+};
+
 template <typename T> struct arr
 {
     T* data;
@@ -190,10 +196,28 @@ template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
     return ret;
 }
 
-template<typename T> arr<T> d_p(arr<T> A, int lag) {
-    //...
+template<typename T> arr<T> d(arr<T> A, int lag) {
+    T* newA = new T[A.size-lag];
     
-    return NULL;
+    for(int i = lag; i < A.size;i++) {
+        newA[i-lag] = A[i] - A[i-lag];
+    }
+    
+    return {newA, A.size-lag};
+}
+
+template<typename T> arr<T> d_p(arr<T> A, int lag) {
+    T* newA = new T[A.size-lag];
+    
+    for(int i = lag; i <A.size;i++) {
+        if(A[i-lag]!= 0) {
+            newA[i-lag] = (A[i] - A[i-lag])/A[i-lag];
+        } else {
+            throw std::overflow_error("arr::d_p - Divide by zero");
+        }
+    }
+    
+    return {newA, A.size-lag};
 }
 
 
@@ -205,6 +229,56 @@ template<typename T> arr<T> copy(arr<T> A) {
     arr<T> RA = {newA, A.size};
     
     return RA;
+}
+
+/**
+ *  Calculates mean and sdev of array elements
+ * 
+ *  Return
+ *  x: mean
+ *  y: sample sdev
+ */
+template<typename T> doubledouble mean(arr<T> A) {
+   
+    // Calc mean
+    double m = 0;
+    
+    for(int i = 0; i < A.size; i++) {
+        m += A[i];
+    }
+    
+    m /=A.size;
+    
+    // Calc var
+    double var = 0;
+    
+    for(int i = 0; i < A.size; i++) {
+        var += std::pow(A[i]-m,2);
+    }
+    
+    return {m, std::sqrt(var/(A.size-1))}; // Sample StDev
+}
+
+/**
+ *  Calculates (lagged) autocorrelation of array elements
+ *  (for stationary process)
+ *  
+ */
+template<typename T> double autoCorellation(arr<T> A, int lag) {
+   
+    // Retrieve mean+sdev of A
+    doubledouble m = mean(A);
+   
+    // Calc autocorrelation
+    double acorr = 0;
+   
+    for(int i = lag; i < A.size; i ++) {
+        acorr += (A[i]-m.x)*(A[i-lag]-m.x);
+    }
+    
+    acorr /= std::pow(m.y,2)*A.size;
+    
+    return acorr;
 }
 
 
