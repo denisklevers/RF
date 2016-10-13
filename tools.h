@@ -240,23 +240,36 @@ template<typename T> arr<T> copy(arr<T> A) {
  */
 template<typename T> doubledouble mean(arr<T> A) {
    
+    return mean(A, 0, A.size);
+}
+
+/**
+ *  Calculates mean and sdev of sub-array elements
+ *  Sub-array [s,e)
+ * 
+ *  Return
+ *  x: mean
+ *  y: sample sdev
+ */
+template<typename T> doubledouble mean(arr<T> A, int s, int e) {
+   
     // Calc mean
     double m = 0;
     
-    for(int i = 0; i < A.size; i++) {
+    for(int i = s; i < e; i++) {
         m += A[i];
     }
     
-    m /=A.size;
+    m /= e-s;
     
     // Calc var
     double var = 0;
     
-    for(int i = 0; i < A.size; i++) {
+    for(int i = s; i < e; i++) {
         var += std::pow(A[i]-m,2);
     }
     
-    return {m, std::sqrt(var/(A.size-1))}; // Sample StDev
+    return {m, std::sqrt(var/(e-s))}; // StDev or sample StDev ?
 }
 
 /**
@@ -264,24 +277,33 @@ template<typename T> doubledouble mean(arr<T> A) {
  *  (for stationary process)
  *  
  */
-template<typename T> double autoCorellation(arr<T> A, int lag) {
+template<typename T> double autoCorellation(arr<T> A, int lag = 0) {
    
-    // Retrieve mean+sdev of A
-    doubledouble m = mean(A);
-   
-    // Calc autocorrelation
-    double acorr = 0;
-   
-    for(int i = lag; i < A.size; i ++) {
-        acorr += (A[i]-m.x)*(A[i-lag]-m.x);
-    }
-    
-    acorr /= std::pow(m.y,2)*A.size;
-    
-    return acorr;
+    return corellation(A,A,lag);
 }
 
+template<typename T> double corellation(arr<T> A, arr<T> B, int lag = 0) {
+    if(A.size == B.size) {
+        doubledouble m_A = mean(A,lag,A.size);
+        doubledouble m_B = mean(B,0,B.size-lag);
 
+        // Calc correlation
+        double acorr = 0;
+   
+        for(int i = lag; i < A.size; i++) {
+            acorr += (A[i]-m_A.x)*(B[i-lag]-m_B.x);
+        }
+        
+        acorr /= m_A.y*m_B.y*(A.size-lag);
+        
+        return acorr;
+    }
+    
+    throw std::out_of_range("correlation - Need equal size arrays");
+    
+}
+
+// ToDo: Correlation with filter !
 
 
 // Print vector
