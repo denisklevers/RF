@@ -6,7 +6,6 @@
 
 /* 
  * File:   LinkedList.h
- * Author: krefl
  *
  * Created on October 9, 2016, 1:22 PM
  */
