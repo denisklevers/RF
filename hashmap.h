@@ -111,6 +111,7 @@ template <class A> class hashmap
             if(m == NULL) {
                 return NULL;
             } else {
+                iteratorPos = m;
                 return &m->value;
             }
         }

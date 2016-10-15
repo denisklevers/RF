@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <iostream>
 
+double** createDoubleArray2D(int Nr, int Nc);
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
  
@@ -46,6 +48,42 @@ struct doubledouble
     double y;
 };
 
+
+template <typename T> struct arr2D
+{
+    T** data;
+    int Nr;
+    int Nc;   
+    
+    /*
+        Applies the supplied function  element-wise 
+     *  f: <T> -> <T>
+     */
+    void apply(T (*function)(T)) {
+        for(int i = 0; i < Nr; i++) {
+            for(int j = 0; j < Nc; j++) {
+                data[i][j] = function(data[i][j]);
+            }
+        }
+    }
+    
+    std::string toString() {
+        std::string s = std::to_string(Nr)+"x"+std::to_string(Nc)+"\n";
+        
+        for(int i = 0; i < Nr; i++) {
+            for(int j = 0; j < Nr; j++) {
+                s += std::to_string(data[i][j])+" ";
+            }
+            
+            s+="\n";
+        }
+        
+        
+        return s;
+    }
+    
+};
+
 template <typename T> struct arr
 {
     T* data;
@@ -60,13 +98,13 @@ template <typename T> struct arr
     }
     
     
-    void multiply(double C) {
+    void multiply(T C) {
         for(int i = 0; i < size; i++) {
             data[i] *= C;
         }
     }
     
-    void divide(double C) {
+    void divide(T C) {
         if(C!=0) {
             multiply(1/C);
         }
@@ -74,19 +112,19 @@ template <typename T> struct arr
         throw std::overflow_error("arr::divide - Divide by zero");
     }
     
-    void add(double C) {
+    void add(T C) {
         for(int i = 0; i < size; i++) {
             data[i] += C;
         }
     }
     
-    void sub(double C) {
+    void sub(T C) {
         for(int i = 0; i < size; i++) {
             data[i] -= C;
         }
     }
     
-    void set(double C) {
+    void set(T C) {
         for(int i = 0; i < size; i++) {
             data[i] = C;
         }
@@ -122,6 +160,18 @@ struct IndexedData
 
     int keyCol;
     hashmap<intint> index;
+    
+    arr2D<double> getSubMatrix(int r0, int c0, int Nr, int Nc) {
+        double** A = createDoubleArray2D(Nr,Nc);
+        
+        for(int i = 0; i < Nr; i++) {
+            memcpy(A[i], data[r0+i]+c0, Nc);
+        }
+        
+        return {A, Nr, Nc};
+    }
+    
+    
     
     arr<double> getCol(int col) 
     {
@@ -167,6 +217,8 @@ struct IndexedData
         
         return getCol(col, pos->A, pos->A + pos->B);
     }
+    
+    
     
 };
 
