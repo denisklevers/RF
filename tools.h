@@ -25,7 +25,14 @@
  
  
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
+enum relOp 
+{
+    l,
+    s,
+    e,
+    le,
+    se,
+};
 
 struct intint 
 {
@@ -273,38 +280,102 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e) {
 }
 
 /**
+ *  Calculates mean and sdev of sub-array elements
+ *  Sub-array [s,e)
+ *  Only elements mapping under function T -> bool = true are taken into account
+ * 
+ *  Return
+ *  x: mean
+ *  y: sample sdev
+ */
+template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<bool(T)> function ) {
+   
+    // Calc mean
+    double m = 0;
+    int    c = 0;
+    for(int i = s; i < e; i++) {
+        if(function(A[i])) {
+            m += A[i];
+            c++;
+        }
+    }
+    
+    m /= c;
+    
+    // Calc var
+    double var = 0;
+    
+    for(int i = s; i < e; i++) {
+        if(function(A[i])) {
+            var += std::pow(A[i]-m,2);
+        }
+    }
+    
+    return {m, std::sqrt(var/(c))}; // StDev or sample StDev ?
+}
+
+/**
  *  Calculates (lagged) autocorrelation of array elements
  *  (for stationary process)
  *  
  */
-template<typename T> double autoCorellation(arr<T> A, int lag = 0) {
+template<typename T> double autoCorrellation(arr<T> A, int lag) {
    
-    return corellation(A,A,lag);
+    return correllation(A,A,lag);
 }
 
-template<typename T> double corellation(arr<T> A, arr<T> B, int lag = 0) {
+template<typename T> double correllation(arr<T> A, arr<T> B, int lag = 0) {
     if(A.size == B.size) {
         doubledouble m_A = mean(A,lag,A.size);
         doubledouble m_B = mean(B,0,B.size-lag);
 
         // Calc correlation
-        double acorr = 0;
+        double corr = 0;
    
         for(int i = lag; i < A.size; i++) {
-            acorr += (A[i]-m_A.x)*(B[i-lag]-m_B.x);
+            corr += (A[i]-m_A.x)*(B[i-lag]-m_B.x);
         }
         
-        acorr /= m_A.y*m_B.y*(A.size-lag);
+        corr /= m_A.y*m_B.y*(A.size-lag);
         
-        return acorr;
+        return corr;
     }
     
     throw std::out_of_range("correlation - Need equal size arrays");
     
 }
 
-// ToDo: Correlation with filter !
+/**
+ *  Calculates (lagged) autocorrelation of array elements
+ *  (for stationary process)
+ * 
+ *  Filtered by function
+ * 
+ *  Note: Not normalized to \pm 1 anymore
+ *  
+ */
+template<typename T> double autocorrelation_filtered(arr<T> A, int lag, std::function<bool(T)> function) {
+    doubledouble m_A = mean(A,lag,A.size);
+    doubledouble m_B = mean(A,0,A.size-lag, function); // Note: filtered mean
+    
+    // Calc correlation
+    double acorr = 0;
+    int c = 0;
+    
+    for(int i = lag; i < A.size; i++) {
+        if(function(A[i-lag])) {
+            acorr += (A[i]-m_A.x)*(A[i-lag]-m_B.x);
+            c++;
+        }
+    }
+        
+    acorr /= m_A.y*m_B.y*c;
+    
+    return acorr;
+}
 
+
+    
 
 // Print vector
 
