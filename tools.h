@@ -49,41 +49,6 @@ struct doubledouble
 };
 
 
-template <typename T> struct arr2D
-{
-    T** data;
-    int Nr;
-    int Nc;   
-    
-    /*
-        Applies the supplied function  element-wise 
-     *  f: <T> -> <T>
-     */
-    void apply(T (*function)(T)) {
-        for(int i = 0; i < Nr; i++) {
-            for(int j = 0; j < Nc; j++) {
-                data[i][j] = function(data[i][j]);
-            }
-        }
-    }
-    
-    std::string toString() {
-        std::string s = std::to_string(Nr)+"x"+std::to_string(Nc)+"\n";
-        
-        for(int i = 0; i < Nr; i++) {
-            for(int j = 0; j < Nr; j++) {
-                s += std::to_string(data[i][j])+" ";
-            }
-            
-            s+="\n";
-        }
-        
-        
-        return s;
-    }
-    
-};
-
 template <typename T> struct arr
 {
     T* data;
@@ -152,6 +117,89 @@ template <typename T> struct arr
     
 };
 
+
+template <typename T> struct arr2D
+{
+    T** data;
+    int Nr;
+    int Nc;   
+    
+    int r = 0;
+    int c = 0;
+    
+    arr2D() {}
+    /*
+     * Initalizes as view
+     *
+     */
+    arr2D(int rs, int cs) {
+        r = rs;
+        c = cs;
+    }
+    
+    
+    /*
+        Get column col
+        [r1,r2)
+     
+     */
+    arr<double> getCol(int col, int r1, int r2) 
+    {
+        
+        if(col < Nc && r1 >= 0 && r2 <= Nr && r1 <= r2) 
+        {
+          
+            // Prepare data
+            double* A = new double[r2-r1];
+            
+            for(int i = r1; i < r2; i++) {
+                A[i-r1] = data[r+i][c+col];
+            }
+       
+            return {A, r2-r1};
+        }
+        
+        throw std::out_of_range("arr2D::getCol - Invalid indices ("+std::to_string(col)+","+std::to_string(r1)+","+std::to_string(r2)+")");
+    }
+    
+    arr<double> getCol(int col) 
+    {
+        return getCol(col, 0, Nr);
+    }
+    
+    /*
+     *  Applies the supplied function  element-wise 
+     *  f: <T> -> <T>
+     */
+    void apply(T (*function)(T)) {
+        for(int i = 0; i < Nr; i++) {
+            for(int j = 0; j < Nc; j++) {
+                data[i+r][j+c] = function(data[i+r][j+c]);
+            }
+        }
+    }
+    
+    std::string toString() {
+        std::string s = std::to_string(Nr)+"x"+std::to_string(Nc)+"\n";
+        
+        for(int i = 0; i < Nr; i++) {
+            for(int j = 0; j < Nc; j++) {
+                s += std::to_string(data[i+r][j+c])+" ";
+            }
+            
+            s+="\n";
+        }
+        
+        
+        return s;
+    }
+    
+    
+    
+};
+
+
+
 struct IndexedData
 {
     double** data;
@@ -168,9 +216,23 @@ struct IndexedData
             memcpy(A[i], data[r0+i]+c0, Nc);
         }
         
-        return {A, Nr, Nc};
+        arr2D<double> R;
+        R.Nr = Nr;
+        R.Nc = Nc;
+        R.data = A;
+        
+        return R;
     }
     
+    arr2D<double> getSubMatrixAsView(int r0, int c0, int Nr, int Nc) {
+        
+        arr2D<double> R = arr2D<double>(r0, c0);
+        R.Nr = Nr;
+        R.Nc = Nc;
+        R.data = data;
+        
+        return R;
+    }
     
     
     arr<double> getCol(int col) 
@@ -406,7 +468,7 @@ template<typename T> double correllation(arr<T> A, arr<T> B, int lag = 0) {
  *  Note: Not normalized to \pm 1 anymore
  *  
  */
-template<typename T> double autocorrelation_filtered(arr<T> A, int lag, std::function<bool(T)> function) {
+template<typename T> double autoCorrelation_filtered(arr<T> A, int lag, std::function<bool(T)> function) {
     doubledouble m_A = mean(A,lag,A.size);
     doubledouble m_B = mean(A,0,A.size-lag, function); // Note: filtered mean
     
