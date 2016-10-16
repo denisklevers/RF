@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <iostream>
 
+double** createDoubleArray2D(int Nr, int Nc);
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
  
@@ -25,7 +27,14 @@
  
  
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
+enum relOp 
+{
+    l,
+    s,
+    e,
+    le,
+    se,
+};
 
 struct intint 
 {
@@ -38,6 +47,7 @@ struct doubledouble
     double x;
     double y;
 };
+
 
 template <typename T> struct arr
 {
@@ -53,13 +63,13 @@ template <typename T> struct arr
     }
     
     
-    void multiply(double C) {
+    void multiply(T C) {
         for(int i = 0; i < size; i++) {
             data[i] *= C;
         }
     }
     
-    void divide(double C) {
+    void divide(T C) {
         if(C!=0) {
             multiply(1/C);
         }
@@ -67,19 +77,19 @@ template <typename T> struct arr
         throw std::overflow_error("arr::divide - Divide by zero");
     }
     
-    void add(double C) {
+    void add(T C) {
         for(int i = 0; i < size; i++) {
             data[i] += C;
         }
     }
     
-    void sub(double C) {
+    void sub(T C) {
         for(int i = 0; i < size; i++) {
             data[i] -= C;
         }
     }
     
-    void set(double C) {
+    void set(T C) {
         for(int i = 0; i < size; i++) {
             data[i] = C;
         }
@@ -107,6 +117,89 @@ template <typename T> struct arr
     
 };
 
+
+template <typename T> struct arr2D
+{
+    T** data;
+    int Nr;
+    int Nc;   
+    
+    int r = 0;
+    int c = 0;
+    
+    arr2D() {}
+    /*
+     * Initalizes as view
+     *
+     */
+    arr2D(int rs, int cs) {
+        r = rs;
+        c = cs;
+    }
+    
+    
+    /*
+        Get column col
+        [r1,r2)
+     
+     */
+    arr<double> getCol(int col, int r1, int r2) 
+    {
+        
+        if(col < Nc && r1 >= 0 && r2 <= Nr && r1 <= r2) 
+        {
+          
+            // Prepare data
+            double* A = new double[r2-r1];
+            
+            for(int i = r1; i < r2; i++) {
+                A[i-r1] = data[r+i][c+col];
+            }
+       
+            return {A, r2-r1};
+        }
+        
+        throw std::out_of_range("arr2D::getCol - Invalid indices ("+std::to_string(col)+","+std::to_string(r1)+","+std::to_string(r2)+")");
+    }
+    
+    arr<double> getCol(int col) 
+    {
+        return getCol(col, 0, Nr);
+    }
+    
+    /*
+     *  Applies the supplied function  element-wise 
+     *  f: <T> -> <T>
+     */
+    void apply(T (*function)(T)) {
+        for(int i = 0; i < Nr; i++) {
+            for(int j = 0; j < Nc; j++) {
+                data[i+r][j+c] = function(data[i+r][j+c]);
+            }
+        }
+    }
+    
+    std::string toString() {
+        std::string s = std::to_string(Nr)+"x"+std::to_string(Nc)+"\n";
+        
+        for(int i = 0; i < Nr; i++) {
+            for(int j = 0; j < Nc; j++) {
+                s += std::to_string(data[i+r][j+c])+" ";
+            }
+            
+            s+="\n";
+        }
+        
+        
+        return s;
+    }
+    
+    
+    
+};
+
+
+
 struct IndexedData
 {
     double** data;
@@ -115,6 +208,32 @@ struct IndexedData
 
     int keyCol;
     hashmap<intint> index;
+    
+    arr2D<double> getSubMatrix(int r0, int c0, int Nr, int Nc) {
+        double** A = createDoubleArray2D(Nr,Nc);
+        
+        for(int i = 0; i < Nr; i++) {
+            memcpy(A[i], data[r0+i]+c0, Nc);
+        }
+        
+        arr2D<double> R;
+        R.Nr = Nr;
+        R.Nc = Nc;
+        R.data = A;
+        
+        return R;
+    }
+    
+    arr2D<double> getSubMatrixAsView(int r0, int c0, int Nr, int Nc) {
+        
+        arr2D<double> R = arr2D<double>(r0, c0);
+        R.Nr = Nr;
+        R.Nc = Nc;
+        R.data = data;
+        
+        return R;
+    }
+    
     
     arr<double> getCol(int col) 
     {
@@ -160,6 +279,8 @@ struct IndexedData
         
         return getCol(col, pos->A, pos->A + pos->B);
     }
+    
+    
     
 };
 
@@ -273,38 +394,102 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e) {
 }
 
 /**
+ *  Calculates mean and sdev of sub-array elements
+ *  Sub-array [s,e)
+ *  Only elements mapping under function T -> bool = true are taken into account
+ * 
+ *  Return
+ *  x: mean
+ *  y: sample sdev
+ */
+template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<bool(T)> function ) {
+   
+    // Calc mean
+    double m = 0;
+    int    c = 0;
+    for(int i = s; i < e; i++) {
+        if(function(A[i])) {
+            m += A[i];
+            c++;
+        }
+    }
+    
+    m /= c;
+    
+    // Calc var
+    double var = 0;
+    
+    for(int i = s; i < e; i++) {
+        if(function(A[i])) {
+            var += std::pow(A[i]-m,2);
+        }
+    }
+    
+    return {m, std::sqrt(var/(c))}; // StDev or sample StDev ?
+}
+
+/**
  *  Calculates (lagged) autocorrelation of array elements
  *  (for stationary process)
  *  
  */
-template<typename T> double autoCorellation(arr<T> A, int lag = 0) {
+template<typename T> double autoCorrellation(arr<T> A, int lag) {
    
-    return corellation(A,A,lag);
+    return correllation(A,A,lag);
 }
 
-template<typename T> double corellation(arr<T> A, arr<T> B, int lag = 0) {
+template<typename T> double correllation(arr<T> A, arr<T> B, int lag = 0) {
     if(A.size == B.size) {
         doubledouble m_A = mean(A,lag,A.size);
         doubledouble m_B = mean(B,0,B.size-lag);
 
         // Calc correlation
-        double acorr = 0;
+        double corr = 0;
    
         for(int i = lag; i < A.size; i++) {
-            acorr += (A[i]-m_A.x)*(B[i-lag]-m_B.x);
+            corr += (A[i]-m_A.x)*(B[i-lag]-m_B.x);
         }
         
-        acorr /= m_A.y*m_B.y*(A.size-lag);
+        corr /= m_A.y*m_B.y*(A.size-lag);
         
-        return acorr;
+        return corr;
     }
     
     throw std::out_of_range("correlation - Need equal size arrays");
     
 }
 
-// ToDo: Correlation with filter !
+/**
+ *  Calculates (lagged) autocorrelation of array elements
+ *  (for stationary process)
+ * 
+ *  Filtered by function
+ * 
+ *  Note: Not normalized to \pm 1 anymore
+ *  
+ */
+template<typename T> double autoCorrelation_filtered(arr<T> A, int lag, std::function<bool(T)> function) {
+    doubledouble m_A = mean(A,lag,A.size);
+    doubledouble m_B = mean(A,0,A.size-lag, function); // Note: filtered mean
+    
+    // Calc correlation
+    double acorr = 0;
+    int c = 0;
+    
+    for(int i = lag; i < A.size; i++) {
+        if(function(A[i-lag])) {
+            acorr += (A[i]-m_A.x)*(A[i-lag]-m_B.x);
+            c++;
+        }
+    }
+        
+    acorr /= m_A.y*m_B.y*c;
+    
+    return acorr;
+}
 
+
+    
 
 // Print vector
 
