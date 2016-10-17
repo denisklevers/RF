@@ -11,6 +11,15 @@
 #include "hashmap.h"
 #include "tools.h"
 
+randUniInt::randUniInt(int l, int h) {
+    
+    dist = std::uniform_int_distribution<int>(l,h);
+    rng = std::mt19937(std::time(0));
+}
+
+int randUniInt::next() {
+    return dist(rng);
+}
 
 coinFlipper::coinFlipper(double bias) {
     p = bias;
@@ -19,8 +28,7 @@ coinFlipper::coinFlipper(double bias) {
 }
 
 bool coinFlipper::coinFlip() {
-    std::uniform_real_distribution<double> unif_dist(0, 1);
-        
+     
     return (unif_dist(rng) < p) ? 1 : 0 ;
 }
     

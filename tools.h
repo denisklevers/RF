@@ -305,6 +305,21 @@ struct value_freq
 double** createDoubleArray2D(int Nr, int Nc);
 void     freeDoubleArray2D(double** A, int Nr);
 
+template<typename T> int posOfFirstMax(T* in, int length) {
+    
+    T max = in[0];
+    int pos = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]>max) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
 template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
    
     arr<T> A;
@@ -433,12 +448,12 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<boo
  *  (for stationary process)
  *  
  */
-template<typename T> double autoCorrellation(arr<T> A, int lag) {
+template<typename T> double autoCorrelation(arr<T> A, int lag) {
    
-    return correllation(A,A,lag);
+    return correlation(A,A,lag);
 }
 
-template<typename T> double correllation(arr<T> A, arr<T> B, int lag = 0) {
+template<typename T> double correlation(arr<T> A, arr<T> B, int lag = 0) {
     if(A.size == B.size) {
         doubledouble m_A = mean(A,lag,A.size);
         doubledouble m_B = mean(B,0,B.size-lag);
@@ -532,10 +547,20 @@ public:
 private:
     
     std::mt19937 rng;
-    
+    std::uniform_real_distribution<double> unif_dist = std::uniform_real_distribution<double>(0, 1);
+
     double p;
 };
 
+class randUniInt {
+public:
+    randUniInt(int l, int h);
+    int next();
+    
+private:
+    std::mt19937 rng;
+    std::uniform_int_distribution<int> dist;
+};
 
 class RandomVariable{
 public:
@@ -550,8 +575,8 @@ public:
 	
 	double inverseCDF(double p);
 	
-	double mean(); 												//Only valid for numbers
-	double var(); 												//Only valid for numbers
+	double mean(); 												
+	double var(); 											
 	double median(); 											
 	
 	int OneDraw();

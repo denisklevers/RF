@@ -64,8 +64,10 @@ struct state {
 class simu {
 public:
     simu(IndexedData* data, int firstMin, int posUnit, double fillRate);
+    
     void reset(int firstMin);          // Reset and start @ random day
     void reset(int day, int firstMin); // Reset and start @ day
+    
     state next(order* O); // Next state under action taken
                             // 0: do nothing (OR simply NULL pointer in)
                             // 1: go long 
@@ -78,7 +80,9 @@ public:
     bool EoD();             // Returns TRUE if end-of-day reached
     
     state next(state S, order* O); // Takes S as current state and jumps to day offset r therein and executes action
+    
     state getState();
+    void  setState(state S);
     
 private:
     IndexedData* Data;

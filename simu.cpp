@@ -45,6 +45,10 @@ state simu::getState() {
     return S;
 }
 
+void simu::setState(state in) {
+    S = in;
+}
+
 bool simu::EoD() {
     return S.r-Day >= N;
 }
