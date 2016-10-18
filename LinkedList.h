@@ -214,13 +214,13 @@ template <class A> class LinkedList
          * Output
          */
         std::string toString() {
-            std::string s = "[ ";
+            std::string s = "L: "+std::to_string(size())+"\n[ ";
             
             for(int i = 0; i < size(); i++) {
                 s += std::to_string(*get(i))+" ";
             }
         
-            return s+" ]";
+            return s+"]";
         }
         
         

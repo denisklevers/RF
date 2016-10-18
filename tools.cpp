@@ -11,6 +11,8 @@
 #include "hashmap.h"
 #include "tools.h"
 
+namespace tools {
+
 randUniInt::randUniInt(int l, int h) {
     
     dist = std::uniform_int_distribution<int>(l,h);
@@ -219,4 +221,6 @@ void printH(std::vector<value_freq> histo)
 {
 	for(int i = 0; i< histo.size(); i++)
 		std::cout << "Value X = " << histo.at(i).value <<  " : " << histo.at(i).frequency << " (Frequency)" << std::endl;
+}
+
 }

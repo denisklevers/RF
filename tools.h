@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <iostream>
 
+namespace tools {
+
 double** createDoubleArray2D(int Nr, int Nc);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -302,7 +304,6 @@ struct value_freq
  
  
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-double** createDoubleArray2D(int Nr, int Nc);
 void     freeDoubleArray2D(double** A, int Nr);
 
 template<typename T> int posOfFirstMax(T* in, int length) {
@@ -312,6 +313,32 @@ template<typename T> int posOfFirstMax(T* in, int length) {
     
     for(int i = 0; i < length; i++) {
         if(in[i]>max) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
+
+template<typename T> int count(T* in, T E, int length) {
+    int c = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]==E) c++;
+    }
+    
+    return c;
+}
+
+template<typename T> int posOfLastMax(T* in, int length) {
+    
+    T max = in[0];
+    int pos = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]>=max) {
             max = in[i];
             pos = i;
         }
@@ -341,6 +368,8 @@ template<typename T> arr<T> d(arr<T> A, int lag) {
     
     return {newA, A.size-lag};
 }
+
+
 
 template<typename T> arr<T> d_p(arr<T> A, int lag) {
     T* newA = new T[A.size-lag];
@@ -624,6 +653,7 @@ std::vector<value_freq> HistogramMaker(std::vector<T> &sample, std::vector<T> sa
 
 void printH(std::vector<value_freq> histo);
 
+}
 
 #endif /* TOOLS_H */
 

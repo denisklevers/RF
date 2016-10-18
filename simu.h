@@ -12,6 +12,8 @@
 #include "tools.h"
 #include <string>
 
+using namespace tools;
+
 
 struct pfEntry {
     int pos, entryHM;
@@ -76,6 +78,8 @@ public:
                             // 4: Cancel order
                             // Notes: *In current mechanics, if pos!=0 : 1=2=0.
                             //        *MKT only orders
+    
+                            // ToDo: Add flip pos order ...
     
     bool EoD();             // Returns TRUE if end-of-day reached
     

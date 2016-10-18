@@ -16,6 +16,9 @@
 
 #include "tools.h"
 
+
+using namespace tools;
+
 class analyzer {
 public:
     analyzer(IndexedData* Data);
