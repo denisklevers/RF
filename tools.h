@@ -304,6 +304,27 @@ struct value_freq
  
  
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+template<typename T> std::string toString(T in[], int size) {
+    std::string s = "[ ";
+    
+    for(int i = 0; i < size; i++) {
+        s += std::to_string(in[i])+" ";
+    }
+    
+    return s += "]"; 
+    
+}
+
+template<typename T> bool inQ(T E, T in[], int size) {
+    for(int i = 0; i < size; i++) {
+        if(in[i]==E) { return true; }
+    }
+    
+    return false;
+}
+
+
 void     freeDoubleArray2D(double** A, int Nr);
 
 template<typename T> int posOfFirstMax(T* in, int length) {
@@ -320,6 +341,48 @@ template<typename T> int posOfFirstMax(T* in, int length) {
     
     return pos;
 }
+
+template<typename T> int posOfFirstMax(T in[], int length, int skip) {
+    
+    int s = -1;
+    do {
+        s++;
+    } while(s==skip);
+    
+    T max = in[s];
+    int pos = s;
+    
+    for(int i = s+1; i < length; i++) {
+        if(in[i] > max && i!=skip ) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
+
+template<typename T> int posOfFirstMax(T in[], int length, int skip[], int skipLength) {
+    
+    int s = -1;
+    do {
+        s++;
+    } while(inQ(s, skip, skipLength));
+    
+    T max = in[s];
+    int pos = s;
+    
+    for(int i = s+1; i < length; i++) {
+        if(in[i] > max && !inQ(i, skip, skipLength) ) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
 
 
 template<typename T> int count(T* in, T E, int length) {
@@ -584,7 +647,10 @@ private:
 class randUniInt {
 public:
     randUniInt(int l, int h);
+   
     int next();
+    int nextSkip(int skip);
+    int nextSkip(int skip[], int size);
     
 private:
     std::mt19937 rng;

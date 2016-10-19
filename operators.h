@@ -26,12 +26,14 @@ class vec_op
 {
 public:
     virtual arr<double> apply(arr<double>) = 0;
+    virtual ~vec_op() {};
 };
 
 class sca_op 
 {
 public:
     virtual double apply(arr<double>) = 0;
+    virtual ~sca_op() {};
 };
 
 
@@ -87,6 +89,10 @@ class sdev : public sca_op
         return tools::mean(in).y;
     }
 };
+
+
+
+
 
 }
 #endif /* OPERATORS_H */

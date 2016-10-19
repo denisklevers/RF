@@ -23,6 +23,31 @@ int randUniInt::next() {
     return dist(rng);
 }
 
+int randUniInt::nextSkip(int skip) {
+    
+    int r;
+    
+    do 
+    {
+        r = dist(rng); 
+    } while(r==skip);
+    
+    return r;    
+        
+}
+
+int randUniInt::nextSkip(int skip[], int size) {
+    int r;
+    
+    do 
+    {
+        r = dist(rng); 
+    } while(inQ(r, skip, size));
+    
+    return r;    
+        
+}
+
 coinFlipper::coinFlipper(double bias) {
     p = bias;
     

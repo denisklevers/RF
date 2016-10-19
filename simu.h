@@ -88,6 +88,8 @@ public:
     state getState();
     void  setState(state S);
     
+    int searchBestAction_MKT_naiveMC(int depth, int runs);
+    
 private:
     IndexedData* Data;
     
@@ -97,7 +99,8 @@ private:
  
     state S = {};
     
-    coinFlipper CF = NULL; // To determine if LMT order @ LMT gets filled / min
+    coinFlipper CF      = NULL; // To determine if LMT order @ LMT gets filled / min
+    randUniInt  randInt = randUniInt(0,3); // Random uniform number generator (for MC command runs)
     
     bool processOrder(order* Oin, state* Sin); // Returns true if Oin filled
     
