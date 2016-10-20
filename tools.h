@@ -236,6 +236,35 @@ struct IndexedData
         return R;
     }
     
+    /*
+     *   Get row
+     *   [c1,c2)
+     *
+     */
+   
+    arr<double> getRow(int row, int c1, int c2) {
+        
+        if(row < rows && c1 >= 0 && c2 <= cols && c1 <= c2) 
+        {
+            // Prepare data
+            double* A = new double[c2-c1];
+            
+            for(int i = c1; i < c2; i++) {
+                A[i-c1] = data[row][i];
+            }
+       
+            return {A, c2-c1}; 
+        }
+        
+        throw std::out_of_range("IndexedData::getRow - Invalid indices");
+  
+    }
+    
+    arr<double> getRow(int row) 
+    {
+        return getRow(row, 0, cols);
+    }
+    
     
     arr<double> getCol(int col) 
     {
@@ -243,9 +272,9 @@ struct IndexedData
     }
     
     /*
-        Get column col
-        [r1,r2)
-     
+     *   Get column col
+     *   [r1,r2)
+     *
      */
     arr<double> getCol(int col, int r1, int r2) 
     {
