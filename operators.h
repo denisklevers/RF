@@ -46,6 +46,7 @@ public:
  * % change over step size
  * 
  * step : step size
+ * 
  */
 class d_p : public vec_op
 {
@@ -61,6 +62,43 @@ public:
     
 private:
     int S;
+};
+
+/*
+ * Simple moving average 
+ * 
+ * wlength : window length
+ *
+ */
+class sma : public vec_op
+{
+public:
+    
+    sma(int wlength) {
+        W = wlength;
+    }
+    
+    virtual arr<double> apply(arr<double> in) 
+    {
+        double* data = new double[in.size-W+1];
+        
+        // Calc moving average
+        for(int i = W-1; i < in.size; i++) {
+            
+            // Calc mean
+            double m = 0;
+            for(int w = i-W+1; w <= i; w++) {
+                m += in[w];
+            }
+            
+            data[i-W+1] = m/W;
+        }
+        
+        return {data, in.size-W+1};
+    }
+    
+private:
+    int W;
 };
 
 

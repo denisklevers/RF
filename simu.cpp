@@ -12,7 +12,7 @@
 #include "tools.h"
 
 
-int simu::searchBestAction_MKT_naiveMC(int depth, int runs) 
+int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs) 
 {
     // Set reward counter
     double R[4] = {0,0,0,0};
@@ -49,7 +49,9 @@ int simu::searchBestAction_MKT_naiveMC(int depth, int runs)
         state T = getState();
         
         R[r] += T.upnl+T.rpnl;
-    
+        
+        // Command penalty;
+        R[r] -= penalties[r];
     }
     
        

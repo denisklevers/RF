@@ -88,7 +88,7 @@ public:
     state getState();
     void  setState(state S);
     
-    int searchBestAction_MKT_naiveMC(int depth, int runs);
+    int searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs);
     
 private:
     IndexedData* Data;

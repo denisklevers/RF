@@ -384,12 +384,21 @@ template<typename T> int posOfFirstMax(T in[], int length, int skip[], int skipL
 }
 
 
-
 template<typename T> int count(T* in, T E, int length) {
     int c = 0;
     
     for(int i = 0; i < length; i++) {
         if(in[i]==E) c++;
+    }
+    
+    return c;
+}
+
+template<typename T> int countNotIn(T in[], T E, int length) {
+    int c = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]!=E) c++;
     }
     
     return c;
@@ -617,6 +626,8 @@ void printV(std::vector<T> vec)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
  
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
+void        saveCSV(const char *filename, double** M, int Nr, int Nc);
+
 IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
 
 

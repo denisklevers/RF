@@ -113,8 +113,33 @@ void loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos) {
             record = strtok(NULL,",");
         }
     }
+    
+    fclose(fstream);
 }
     
+void saveCSV(const char *filename, double** M, int Nr, int Nc) {
+    
+    FILE *fstream = fopen(filename, "w");
+  
+    for(int r = 0; r < Nr; r++) {
+        std::string s; 
+       
+        for(int c = 0; c < Nc; c++) {
+            
+           s += std::to_string(M[r][c]);
+           
+           if(c < Nc-1) s+= ",";
+        }
+       
+        s += "\n";
+         
+        fputs(s.data(), fstream);
+    }
+   
+    fclose(fstream);
+}
+
+
 IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol) {
     double** M = createDoubleArray2D(Nr,Nc);
     
