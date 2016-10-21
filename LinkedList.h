@@ -36,7 +36,13 @@ template <class A> class Node
 template <class A> class LinkedList 
 {
     public:
+        A &operator[](int i) {
+            if(i < size()) {
+                return get(i);
+            } 
         
+            throw std::out_of_range("LinkedList::access - Index out of range");
+        }
         /**
          * Adds element to list
          * 
@@ -203,6 +209,20 @@ template <class A> class LinkedList
         ~LinkedList() {
             removeAll();
         }
+        
+        /*
+         * Output
+         */
+        std::string toString() {
+            std::string s = "L: "+std::to_string(size())+"\n[ ";
+            
+            for(int i = 0; i < size(); i++) {
+                s += std::to_string(*get(i))+" ";
+            }
+        
+            return s+"]";
+        }
+        
         
     private:   
         Node<A>* head = NULL;

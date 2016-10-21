@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <iostream>
 
+namespace tools {
+
 double** createDoubleArray2D(int Nr, int Nc);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,6 +236,35 @@ struct IndexedData
         return R;
     }
     
+    /*
+     *   Get row
+     *   [c1,c2)
+     *
+     */
+   
+    arr<double> getRow(int row, int c1, int c2) {
+        
+        if(row < rows && c1 >= 0 && c2 <= cols && c1 <= c2) 
+        {
+            // Prepare data
+            double* A = new double[c2-c1];
+            
+            for(int i = c1; i < c2; i++) {
+                A[i-c1] = data[row][i];
+            }
+       
+            return {A, c2-c1}; 
+        }
+        
+        throw std::out_of_range("IndexedData::getRow - Invalid indices");
+  
+    }
+    
+    arr<double> getRow(int row) 
+    {
+        return getRow(row, 0, cols);
+    }
+    
     
     arr<double> getCol(int col) 
     {
@@ -241,9 +272,9 @@ struct IndexedData
     }
     
     /*
-        Get column col
-        [r1,r2)
-     
+     *   Get column col
+     *   [r1,r2)
+     *
      */
     arr<double> getCol(int col, int r1, int r2) 
     {
@@ -302,8 +333,120 @@ struct value_freq
  
  
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-double** createDoubleArray2D(int Nr, int Nc);
+
+template<typename T> std::string toString(T in[], int size) {
+    std::string s = "[ ";
+    
+    for(int i = 0; i < size; i++) {
+        s += std::to_string(in[i])+" ";
+    }
+    
+    return s += "]"; 
+    
+}
+
+template<typename T> bool inQ(T E, T in[], int size) {
+    for(int i = 0; i < size; i++) {
+        if(in[i]==E) { return true; }
+    }
+    
+    return false;
+}
+
+
 void     freeDoubleArray2D(double** A, int Nr);
+
+template<typename T> int posOfFirstMax(T* in, int length) {
+    
+    T max = in[0];
+    int pos = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]>max) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
+template<typename T> int posOfFirstMax(T in[], int length, int skip) {
+    
+    int s = -1;
+    do {
+        s++;
+    } while(s==skip);
+    
+    T max = in[s];
+    int pos = s;
+    
+    for(int i = s+1; i < length; i++) {
+        if(in[i] > max && i!=skip ) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
+
+template<typename T> int posOfFirstMax(T in[], int length, int skip[], int skipLength) {
+    
+    int s = -1;
+    do {
+        s++;
+    } while(inQ(s, skip, skipLength));
+    
+    T max = in[s];
+    int pos = s;
+    
+    for(int i = s+1; i < length; i++) {
+        if(in[i] > max && !inQ(i, skip, skipLength) ) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
+
+
+template<typename T> int count(T* in, T E, int length) {
+    int c = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]==E) c++;
+    }
+    
+    return c;
+}
+
+template<typename T> int countNotIn(T in[], T E, int length) {
+    int c = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]!=E) c++;
+    }
+    
+    return c;
+}
+
+template<typename T> int posOfLastMax(T* in, int length) {
+    
+    T max = in[0];
+    int pos = 0;
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i]>=max) {
+            max = in[i];
+            pos = i;
+        }
+    }
+    
+    return pos;
+}
 
 template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
    
@@ -326,6 +469,8 @@ template<typename T> arr<T> d(arr<T> A, int lag) {
     
     return {newA, A.size-lag};
 }
+
+
 
 template<typename T> arr<T> d_p(arr<T> A, int lag) {
     T* newA = new T[A.size-lag];
@@ -433,12 +578,12 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<boo
  *  (for stationary process)
  *  
  */
-template<typename T> double autoCorrellation(arr<T> A, int lag) {
+template<typename T> double autoCorrelation(arr<T> A, int lag) {
    
-    return correllation(A,A,lag);
+    return correlation(A,A,lag);
 }
 
-template<typename T> double correllation(arr<T> A, arr<T> B, int lag = 0) {
+template<typename T> double correlation(arr<T> A, arr<T> B, int lag = 0) {
     if(A.size == B.size) {
         doubledouble m_A = mean(A,lag,A.size);
         doubledouble m_B = mean(B,0,B.size-lag);
@@ -510,6 +655,8 @@ void printV(std::vector<T> vec)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
  
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
+void        saveCSV(const char *filename, double** M, int Nr, int Nc);
+
 IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
 
 
@@ -532,10 +679,23 @@ public:
 private:
     
     std::mt19937 rng;
-    
+    std::uniform_real_distribution<double> unif_dist = std::uniform_real_distribution<double>(0, 1);
+
     double p;
 };
 
+class randUniInt {
+public:
+    randUniInt(int l, int h);
+   
+    int next();
+    int nextSkip(int skip);
+    int nextSkip(int skip[], int size);
+    
+private:
+    std::mt19937 rng;
+    std::uniform_int_distribution<int> dist;
+};
 
 class RandomVariable{
 public:
@@ -550,8 +710,8 @@ public:
 	
 	double inverseCDF(double p);
 	
-	double mean(); 												//Only valid for numbers
-	double var(); 												//Only valid for numbers
+	double mean(); 												
+	double var(); 											
 	double median(); 											
 	
 	int OneDraw();
@@ -599,6 +759,7 @@ std::vector<value_freq> HistogramMaker(std::vector<T> &sample, std::vector<T> sa
 
 void printH(std::vector<value_freq> histo);
 
+}
 
 #endif /* TOOLS_H */
 

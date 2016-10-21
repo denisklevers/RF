@@ -12,6 +12,8 @@
 #include "tools.h"
 #include <string>
 
+using namespace tools;
+
 
 struct pfEntry {
     int pos, entryHM;
@@ -64,8 +66,10 @@ struct state {
 class simu {
 public:
     simu(IndexedData* data, int firstMin, int posUnit, double fillRate);
+    
     void reset(int firstMin);          // Reset and start @ random day
     void reset(int day, int firstMin); // Reset and start @ day
+    
     state next(order* O); // Next state under action taken
                             // 0: do nothing (OR simply NULL pointer in)
                             // 1: go long 
@@ -75,10 +79,16 @@ public:
                             // Notes: *In current mechanics, if pos!=0 : 1=2=0.
                             //        *MKT only orders
     
+                            // ToDo: Add flip pos order ...
+    
     bool EoD();             // Returns TRUE if end-of-day reached
     
     state next(state S, order* O); // Takes S as current state and jumps to day offset r therein and executes action
+    
     state getState();
+    void  setState(state S);
+    
+    int searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs);
     
 private:
     IndexedData* Data;
@@ -89,7 +99,8 @@ private:
  
     state S = {};
     
-    coinFlipper CF = NULL; // To determine if LMT order @ LMT gets filled / min
+    coinFlipper CF      = NULL; // To determine if LMT order @ LMT gets filled / min
+    randUniInt  randInt = randUniInt(0,3); // Random uniform number generator (for MC command runs)
     
     bool processOrder(order* Oin, state* Sin); // Returns true if Oin filled
     

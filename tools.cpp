@@ -11,6 +11,42 @@
 #include "hashmap.h"
 #include "tools.h"
 
+namespace tools {
+
+randUniInt::randUniInt(int l, int h) {
+    
+    dist = std::uniform_int_distribution<int>(l,h);
+    rng = std::mt19937(std::time(0));
+}
+
+int randUniInt::next() {
+    return dist(rng);
+}
+
+int randUniInt::nextSkip(int skip) {
+    
+    int r;
+    
+    do 
+    {
+        r = dist(rng); 
+    } while(r==skip);
+    
+    return r;    
+        
+}
+
+int randUniInt::nextSkip(int skip[], int size) {
+    int r;
+    
+    do 
+    {
+        r = dist(rng); 
+    } while(inQ(r, skip, size));
+    
+    return r;    
+        
+}
 
 coinFlipper::coinFlipper(double bias) {
     p = bias;
@@ -19,8 +55,7 @@ coinFlipper::coinFlipper(double bias) {
 }
 
 bool coinFlipper::coinFlip() {
-    std::uniform_real_distribution<double> unif_dist(0, 1);
-        
+     
     return (unif_dist(rng) < p) ? 1 : 0 ;
 }
     
@@ -78,8 +113,33 @@ void loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos) {
             record = strtok(NULL,",");
         }
     }
+    
+    fclose(fstream);
 }
     
+void saveCSV(const char *filename, double** M, int Nr, int Nc) {
+    
+    FILE *fstream = fopen(filename, "w");
+  
+    for(int r = 0; r < Nr; r++) {
+        std::string s; 
+       
+        for(int c = 0; c < Nc; c++) {
+            
+           s += std::to_string(M[r][c]);
+           
+           if(c < Nc-1) s+= ",";
+        }
+       
+        s += "\n";
+         
+        fputs(s.data(), fstream);
+    }
+   
+    fclose(fstream);
+}
+
+
 IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol) {
     double** M = createDoubleArray2D(Nr,Nc);
     
@@ -211,4 +271,6 @@ void printH(std::vector<value_freq> histo)
 {
 	for(int i = 0; i< histo.size(); i++)
 		std::cout << "Value X = " << histo.at(i).value <<  " : " << histo.at(i).frequency << " (Frequency)" << std::endl;
+}
+
 }

@@ -11,6 +11,65 @@
 #include <cstdlib>
 #include "tools.h"
 
+
+int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs) 
+{
+    // Set reward counter
+    double R[4] = {0,0,0,0};
+ 
+    // Save current state:
+    state S_init = getState();
+    
+    // Vars
+    int nac[2] = {1,2};
+    order O    = {0,1,0};
+            
+    // MC runs
+    for(int m = 0; m < runs; m++) {
+        
+        setState(S_init);
+        
+        int r;
+        
+        if(S.PF.pos==0) {
+            r = randInt.nextSkip(3);
+        } else {
+            r = randInt.nextSkip(nac, 2);
+        }
+        
+        O.action = r;
+        
+        // MC depth run
+        for(int i = 0; i < depth; i++) {
+            // Generate and execute random order
+            state S = next(&O);
+            O.action = randInt.next();
+        }
+            
+        state T = getState();
+        
+        R[r] += T.upnl+T.rpnl;
+        
+        // Command penalty;
+        R[r] -= penalties[r];
+    }
+    
+       
+    // Cleanup 
+    setState(S_init);
+    
+    int a;
+   
+    if(S.PF.pos==0) {
+        a = posOfFirstMax(R, 4, 3); 
+    } else {
+        a = posOfFirstMax(R, 4, nac, 2);
+    }
+    
+    return a;
+}
+
+
 simu::simu(IndexedData* data, int firstMin, int posUnit, double fillRate) {
     Data = data;
     lot  = posUnit;
@@ -43,6 +102,10 @@ void simu::reset(int day, int firstMin) {
 
 state simu::getState() {
     return S;
+}
+
+void simu::setState(state in) {
+    S = in;
 }
 
 bool simu::EoD() {
@@ -254,6 +317,7 @@ state simu::next(order* O) {
            || (   (O->action == 1||O->action == 2)
                 && Sn.PF.pos != 0  // Invalid order
               )
+           || ( O->action == 0)  // Invalid order
           )
         {
             // Cancel order (due to command)
