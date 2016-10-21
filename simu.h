@@ -22,6 +22,7 @@ struct pfEntry {
 
 struct order {
     int action;
+    int pos;
     int lifetime;
     double LMT;
     
@@ -39,9 +40,8 @@ struct state {
     int day; // Row pos of day;
     int r;   // Current absolute row pos
     
-    double upnl;
-    double rpnl;
-   
+    double upnl, upnl_p, rpnl, rpnl_p; 
+    
     pfEntry PF;
     order* AO;
     
@@ -50,7 +50,9 @@ struct state {
                        +" r:"+std::to_string(r-day)
                        +" pos: "+std::to_string(PF.pos)
                        +" upnl: "+std::to_string(upnl)
-                       +" rpnl: "+std::to_string(rpnl);
+                       +" upnl_p: "+std::to_string(upnl_p)
+                       +" rpnl: "+std::to_string(rpnl)
+                       +" rpnl_p: "+std::to_string(rpnl_p);
              
         if(AO!=NULL) {
             s += "\n "+AO->toString();
@@ -65,7 +67,7 @@ struct state {
 
 class simu {
 public:
-    simu(IndexedData* data, int firstMin, int posUnit, double fillRate);
+    simu(IndexedData* data, int firstMin, double posValue, double fillRate);
     
     void reset(int firstMin);          // Reset and start @ random day
     void reset(int day, int firstMin); // Reset and start @ day
@@ -88,6 +90,8 @@ public:
     state getState();
     void  setState(state S);
     
+    int calc_shares();
+    
     int searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs);
     
 private:
@@ -95,8 +99,8 @@ private:
     
     int N;     // # Elements @ day
     int Day;   // Row pos of day in data
-    int lot;   // lot size to use
- 
+    double invSize;
+    
     state S = {};
     
     coinFlipper CF      = NULL; // To determine if LMT order @ LMT gets filled / min
@@ -115,7 +119,6 @@ private:
      *      1: LMT order
      */
     double commissions(int shares, double value, int type, bool LMT); 
-    
     
 };
 

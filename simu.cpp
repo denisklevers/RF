@@ -70,9 +70,9 @@ int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs)
 }
 
 
-simu::simu(IndexedData* data, int firstMin, int posUnit, double fillRate) {
+simu::simu(IndexedData* data, int firstMin, double posValue, double fillRate) {
     Data = data;
-    lot  = posUnit;
+    invSize = posValue;
     CF   = coinFlipper(fillRate);
     
     reset(firstMin);
@@ -137,11 +137,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                    ) 
               )
             {
-                Sin->PF.pos = lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = Sin->r-Day;
                 Sin->PF.EP = Oin->LMT; 
                 
-                Sin->rpnl -= commissions(lot, lot*Oin->LMT, 0, true);
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Oin->LMT, 0, true);
                 
                 return true;
             }
@@ -152,11 +152,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                 &&  Sin->PF.pos == 0
               )
             {
-                Sin->PF.pos = lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = Sin->r-Day;
                 Sin->PF.EP = Data->data[Sin->r-1][4]; // Take previous ASK (time of order send) 
                 
-                Sin->rpnl -= commissions(lot, lot*Sin->PF.EP, 0, false);
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Sin->PF.EP, 0, false);
                 
                 return true;
             }
@@ -170,11 +170,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                    ) 
               )
             {
-                Sin->PF.pos = -lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = S.r-Day;
                 Sin->PF.EP = Oin->LMT;
                     
-                Sin->rpnl -= commissions(lot, lot*Oin->LMT, 1, true);  
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Oin->LMT, 1, true);  
                 
                 return true;
             }
@@ -185,11 +185,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                 &&  Sin->PF.pos == 0
               )
             {
-                Sin->PF.pos = -lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = Sin->r-Day;
                 Sin->PF.EP = Data->data[Sin->r-1][7]; // Take previous ASK (time of order send) 
                 
-                Sin->rpnl -= commissions(lot, lot*Sin->PF.EP, 0, false);
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Sin->PF.EP, 0, false);
                 
                 return true;
             }
@@ -323,6 +323,16 @@ state simu::next(order* O) {
             // Cancel order (due to command)
                Sn.AO = NULL;
         } else {
+            
+            // Set pos size 
+            if(O->action == 3) {
+                O->pos = S.PF.pos;
+            }
+            
+            if((O->action == 1 || O->action == 2)) {
+                O->pos = calc_shares();
+            }
+            
             Sn.AO = O;
         }  
     } 
@@ -332,12 +342,20 @@ state simu::next(order* O) {
     
     // Calc MID upnl (use Sn MID)
     Sn.upnl = Sn.PF.pos*((Data->data[Sn.r][4]+Data->data[Sn.r][7])/2 - Sn.PF.EP);
-   
+    Sn.upnl_p = Sn.upnl/invSize;
+    
+    //  Calc rpnl_p
+    Sn.rpnl_p = Sn.rpnl/invSize;
+    
     // Set state
     S = Sn;
     
     return S;
 }
+
+int simu::calc_shares() {
+   return floor(invSize/((Data->data[S.r][4]+Data->data[S.r][7])/2));   
+} 
 
 double simu::commissions(int shares, double value, int type, bool LMT) {
     
