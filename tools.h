@@ -697,25 +697,26 @@ private:
     std::uniform_int_distribution<int> dist;
 };
 
+template <class T>
 class RandomVariable{
 public:
 	// RandomVariable();
 	// double DrawURN(double a, double b);
 	
-	RandomVariable(std::vector<int>, std::vector<double> );
+	RandomVariable(std::vector<T>, std::vector<double> );
 	~RandomVariable()
 	{	
 	std::cout << "A random discrete variable has been destroyed." << std::endl;
 	}
 	
-	double inverseCDF(double p);
+	T inverseCDF(double p);
 	
-	double mean(); 												
-	double var(); 											
-	double median(); 											
+	T mean(); 												
+	T var(); 											
+	T median(); 											
 	
-	int OneDraw();
-	std::vector<int> Sample(int SampleSize);
+	T OneDraw();
+	std::vector<T> Sample(int SampleSize);
 	void showData();
 	
 private:
