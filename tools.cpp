@@ -10,6 +10,7 @@
 #include <random>
 #include "hashmap.h"
 #include "tools.h"
+#include <typeinfo>
 
 namespace tools {
 
@@ -173,8 +174,8 @@ IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int st
 
 // Random variable
 
-
-RandomVariable::RandomVariable(std::vector<int> Xs, std::vector<double> ps)
+template <class T>
+RandomVariable<T>::RandomVariable(std::vector<T> Xs, std::vector<double> ps)
 {
 	samplespace =  Xs;
 	probs = ps;
@@ -187,11 +188,11 @@ RandomVariable::RandomVariable(std::vector<int> Xs, std::vector<double> ps)
 		std::cout << "Ill-defined probabilities: Sum is " << sum << "."<< std::endl;
 	
 	auto seed = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    rng = std::mt19937(seed);
+        rng = std::mt19937(seed);
 }
 
-
-double RandomVariable::inverseCDF(double p)
+template <class T>
+T RandomVariable<T>::inverseCDF(double p)
 {
 	int k = 0;
 	double test = 0;
@@ -204,20 +205,20 @@ double RandomVariable::inverseCDF(double p)
 	return samplespace.at(k-1);
 }
 
-
-int RandomVariable::OneDraw()
+template <class T>
+T RandomVariable<T>::OneDraw()
 {
 	std::uniform_real_distribution<double> distr(0.0, 1.0);
 	
 	return inverseCDF(distr(rng));
 }
 
-
-std::vector<int> RandomVariable::Sample(int SampleSize)
+template <class T>
+std::vector<T> RandomVariable<T>::Sample(int SampleSize)
 {
 	std::uniform_real_distribution<double> distr(0.0, 1.0);
 	
-	std::vector<int> *ret =  new std::vector<int>(SampleSize);       // Put entire vector on heap
+	std::vector<T> *ret =  new std::vector<T>(SampleSize);       // Put entire vector on heap
 	
 	for(int i=0; i<SampleSize; i++)
 	{
@@ -228,7 +229,8 @@ std::vector<int> RandomVariable::Sample(int SampleSize)
 	
 }
 
-void RandomVariable::showData()
+template <class T>
+void RandomVariable<T>::showData()
 {
 	std::cout<< "The random variable X is defined by the sample space and probabilities \n" ;
 	for(int i=0; i<samplespace.size(); i++)
@@ -238,7 +240,8 @@ void RandomVariable::showData()
 	}
 }
 
-double RandomVariable::mean()
+template <class T>
+T RandomVariable<T>::mean()
 {
 	double sum=0;
 	
@@ -249,13 +252,14 @@ double RandomVariable::mean()
 	
 }; 												
 
-double RandomVariable::median()
+template <class T>
+T RandomVariable<T>::median()
 {
 	return samplespace.at(static_cast<int>(samplespace.size()/2)-1);
 }; 											
 
-
-double RandomVariable::var()
+template <class T>
+T RandomVariable<T>::var()
 {
 	double sum=0;
 	
@@ -264,6 +268,15 @@ double RandomVariable::var()
 		
 	return sum;
 }; 
+
+// No need to call this TemporaryFunction() function,
+// it's just to avoid link error.
+void TemporaryFunction ()
+{
+    std::vector<int> a (1);
+    std::vector<double> b (1);
+    RandomVariable<int> TempObj(a,b);
+}
 
 // Printing Histogramm:
 
