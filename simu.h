@@ -10,6 +10,7 @@
 #define SIMU_H
 
 #include "tools.h"
+#include "FiniteQueue.h"
 #include <string>
 
 using namespace tools;
@@ -35,6 +36,12 @@ struct order {
     }
 };
 
+struct simuLog {
+    FiniteQueue<int>*    actions;
+    FiniteQueue<double>* upnls;
+    FiniteQueue<double>* rpnls;
+
+};
 
 struct state {
     int day; // Row pos of day;
@@ -67,7 +74,7 @@ struct state {
 
 class simu {
 public:
-    simu(IndexedData* data, int firstMin, double posValue, double fillRate);
+    simu(IndexedData* data, int firstMin, double posValue, double fillRate, int logSize);
     
     void reset(int firstMin);          // Reset and start @ random day
     void reset(int day, int firstMin); // Reset and start @ day
@@ -94,17 +101,25 @@ public:
     
     int searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs);
     
+    simuLog* getLog() {
+        return &L;
+    }
+    
 private:
     IndexedData* Data;
     
     int N;     // # Elements @ day
     int Day;   // Row pos of day in data
+   
     double invSize;
     
     state S = {};
     
     coinFlipper CF      = NULL; // To determine if LMT order @ LMT gets filled / min
     randUniInt  randInt = randUniInt(0,3); // Random uniform number generator (for MC command runs)
+    
+    simuLog L; 
+    bool log = true;
     
     bool processOrder(order* Oin, state* Sin); // Returns true if Oin filled
     

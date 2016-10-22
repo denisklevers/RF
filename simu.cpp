@@ -10,10 +10,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include "tools.h"
-
+#include "FiniteQueue.h"
 
 int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs) 
 {
+    // Deactivate logging for MC run
+    log = false;
+    
     // Set reward counter
     double R[4] = {0,0,0,0};
  
@@ -66,14 +69,18 @@ int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs)
         a = posOfFirstMax(R, 4, nac, 2);
     }
     
+    log = true;
+    
     return a;
 }
 
 
-simu::simu(IndexedData* data, int firstMin, double posValue, double fillRate) {
-    Data = data;
+simu::simu(IndexedData* data, int firstMin, double posValue, double fillRate, int logSize) {
+    Data    = data;
     invSize = posValue;
-    CF   = coinFlipper(fillRate);
+    L       = {new FiniteQueue<int>(logSize, 0),new FiniteQueue<double>(logSize, 0),new FiniteQueue<double>(logSize, 0)};
+    
+    CF      = coinFlipper(fillRate);
     
     reset(firstMin);
  
@@ -309,7 +316,9 @@ state simu::next(order* O) {
     
     // Set new order if present (cancels old)
     if(O!=NULL) {
-        
+        // Log action
+        if(log) L.actions->in(O->action);
+   
         if(   O->action == 4       // Cancel command
            || (    O->action == 3  
                 && Sn.PF.pos == 0  // Invalid order
@@ -321,7 +330,8 @@ state simu::next(order* O) {
           )
         {
             // Cancel order (due to command)
-               Sn.AO = NULL;
+            Sn.AO = NULL;
+            
         } else {
             
             // Set pos size 
@@ -335,6 +345,9 @@ state simu::next(order* O) {
             
             Sn.AO = O;
         }  
+    } else {
+        // Log null action
+        if(log) L.actions->in(0);
     } 
     
     // Process new order (if present)
@@ -346,6 +359,12 @@ state simu::next(order* O) {
     
     //  Calc rpnl_p
     Sn.rpnl_p = Sn.rpnl/invSize;
+    
+    // Add to logs
+    if(log && L.actions->size() > 0) {
+        L.upnls->in(Sn.upnl_p);
+        L.rpnls->in(Sn.rpnl_p);
+    }
     
     // Set state
     S = Sn;
