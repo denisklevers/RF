@@ -330,7 +330,7 @@ state simu::next(order* O) {
             }
             
             if((O->action == 1 || O->action == 2)) {
-                O->pos = calc_shares();
+                O->pos = (O->action == 1) ? calc_shares() : -calc_shares();
             }
             
             Sn.AO = O;

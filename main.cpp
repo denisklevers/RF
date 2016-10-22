@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
     
     while(!(Sim.EoD())) {
     
-        int a = Sim.searchBestAction_MKT_naiveMC(P,60,15);
+        int a = Sim.searchBestAction_MKT_naiveMC(P,10000,30);
         
         Alist.add(a);
         
