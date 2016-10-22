@@ -92,9 +92,11 @@ void simu::reset(int firstMin) {
     Day = d.A;
     N   = d.B;
     
+    S = {};
     S.day = Day;
     S.r = Day+firstMin;    
     
+    L = {};
 }
 
 void simu::reset(int day, int firstMin) {
@@ -103,8 +105,11 @@ void simu::reset(int day, int firstMin) {
     Day = d.A;
     N   = d.B;
     
+    S = {};
     S.day = Day;
     S.r   = Day+firstMin;   
+
+    L = {};
 }
 
 state simu::getState() {

@@ -118,7 +118,7 @@ private:
     coinFlipper CF      = NULL; // To determine if LMT order @ LMT gets filled / min
     randUniInt  randInt = randUniInt(0,3); // Random uniform number generator (for MC command runs)
     
-    simuLog L; 
+    simuLog L = {}; 
     bool log = true;
     
     bool processOrder(order* Oin, state* Sin); // Returns true if Oin filled

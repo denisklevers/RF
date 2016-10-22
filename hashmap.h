@@ -16,6 +16,7 @@
 #include <iostream>
 
 #include "uthash.h"
+#include "arr.h"
 
 typedef std::mt19937 MyRNG; // Define Random Engine to be Mersenne Twister
 
@@ -167,6 +168,28 @@ template <class A> class hashmap
             removeAll();
         }
         
+        /*
+         * Returns array with all keys
+         */
+       
+        arr<int> getKeySet() {
+           
+            int* K = new int[size()];
+            
+            Map* m = Maps;
+           
+            int c = 0;
+            while(m != NULL) {
+                
+                K[c] = m->key;
+                
+                m = (Map*) m->hh.next;
+                c++;
+            }
+            
+            return {K, size()};
+            
+        }
         
     private:
         

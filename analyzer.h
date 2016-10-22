@@ -14,6 +14,7 @@
 #define ANALYZER_H
 
 #include "tools.h"
+#include "arr.h"
 
 
 using namespace tools;
