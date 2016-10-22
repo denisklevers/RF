@@ -448,6 +448,43 @@ template<typename T> int posOfLastMax(T* in, int length) {
     return pos;
 }
 
+template<typename T> int max(T* in, int length) {
+    
+    T max = in[0];
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i] > max) {
+            max = in[i];
+        }
+    }
+    
+    return max;
+}
+
+template<typename T> int min(T* in, int length) {
+    
+    T min = in[0];
+    
+    for(int i = 0; i < length; i++) {
+        if(in[i] < min) {
+            min = in[i];
+        }
+    }
+    
+    return min;
+}
+
+template<typename T> T sum(arr<T> A) {
+    
+    T sum = A[1];
+    
+    for(int i = 1; i < A.size; i++) {
+        sum += A[i];
+    }
+    
+    return sum;
+}
+
 template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
    
     arr<T> A;
