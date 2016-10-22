@@ -6,7 +6,7 @@
 
 /* 
  * File:   analyzer.cpp
- * Author: krefl
+ * Author: Dan
  * 
  * Created on October 15, 2016, 10:39 PM
  */

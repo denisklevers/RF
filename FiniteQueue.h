@@ -6,7 +6,6 @@
 
 /* 
  * File:   FiniteQueue.h
- * Author: krefl
  *
  * Created on October 22, 2016, 11:17 AM
  */

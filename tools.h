@@ -448,7 +448,7 @@ template<typename T> int posOfLastMax(T* in, int length) {
     return pos;
 }
 
-template<typename T> int max(T* in, int length) {
+template<typename T> double max(T* in, int length) {
     
     T max = in[0];
     
@@ -461,7 +461,12 @@ template<typename T> int max(T* in, int length) {
     return max;
 }
 
-template<typename T> int min(T* in, int length) {
+template<typename T> double max(arr<T> in) {
+    
+    return max(in.data, in.size);
+}
+
+template<typename T> double min(T* in, int length) {
     
     T min = in[0];
     
@@ -472,6 +477,11 @@ template<typename T> int min(T* in, int length) {
     }
     
     return min;
+}
+
+template<typename T> double min(arr<T> in) {
+    
+    return min(in.data, in.size);
 }
 
 template<typename T> T sum(arr<T> A) {

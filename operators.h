@@ -154,7 +154,7 @@ class min : public sca_op
  * Max of elements
  *
  */
-class min : public sca_op
+class max : public sca_op
 {
     virtual double apply(arr<double> in) {
         return tools::max(in);
