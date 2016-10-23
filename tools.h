@@ -185,6 +185,17 @@ struct value_freq
 {
 	double value;
 	int frequency;
+        
+        value_freq(double x, int n)
+        {
+            value = x;
+            frequency = n;
+        }
+        
+        void printDate()
+        {
+            std::cout << "(" << value << "," << frequency << ")"<< std::endl;
+        }
 };
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -640,6 +651,28 @@ private:
 };
 
 
+class emp_distribution{
+    
+public:
+    emp_distribution(std::vector<double>);
+    ~emp_distribution()
+    {	
+	std::cout << "An empirical distribution has been destroyed." << std::endl;
+    }
+    std::vector<value_freq> histogramm(int);
+    doubledouble min_max();
+    double mean();
+    double var();
+    double skewness();
+    double curtosity();
+    std::vector<double> resample(int);
+    // Function pointer kernel
+    
+    
+private:
+    std::vector<double> sample;
+    
+};
 
 
 

@@ -11,6 +11,7 @@
 #include "hashmap.h"
 #include "tools.h"
 #include <typeinfo>
+#include <algorithm>
 
 namespace tools {
 
@@ -286,4 +287,21 @@ void printH(std::vector<value_freq> histo)
 		std::cout << "Value X = " << histo.at(i).value <<  " : " << histo.at(i).frequency << " (Frequency)" << std::endl;
 }
 
+}
+
+tools::emp_distribution::emp_distribution(std::vector<double> input)
+{
+    sample = input;
+}
+std::vector<tools::value_freq> tools::emp_distribution::histogramm(int N)
+{
+    double minS = *min_element(sample.begin(),sample.end());
+    double maxS = *max_element(sample.begin(),sample.end());
+    
+    double binsize = (maxS-minS)/N;
+    
+    
+    std::vector<tools::value_freq> vec {tools::value_freq(1,0)};
+    
+    return vec;
 }
