@@ -483,6 +483,32 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<boo
     return {m, std::sqrt(var/(c))}; // StDev or sample StDev ?
 }
 
+template<typename T> arr<T> normalize_via_mean(arr<T> in) {
+    
+    T* ret = new T[in.size];
+    
+    doubledouble m = mean(in);
+    
+    for(int i = 0; i < in.size; i++) {
+        ret[i] = (in[i] - m.x)/m.y;
+    }
+    
+    return {ret, in.size()};
+}
+
+template<typename T> arr<T> normalize_via_minmax(arr<T> in) {
+    
+    T* ret = new T[in.size];
+    
+    double min = min(in);
+    double max = max(in);
+    
+    for(int i = 0; i < in.size; i++) {
+        ret[i] = in[i]/(max-min);
+    }
+    
+    return {ret, in.size()};
+}
 
 
 template<typename T> double correlation(arr<T> A, arr<T> B, int lag = 0) {

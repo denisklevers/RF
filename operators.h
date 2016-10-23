@@ -129,6 +129,20 @@ class sdev : public sca_op
 };
 
 /*
+ * Fano factor 
+ * 
+ * var^2/mean
+ */
+class fano : public sca_op 
+{
+    virtual double apply(arr<double> in) {
+        doubledouble m = tools::mean(in);
+        
+        return std::pow(m.y,2)/m.x;
+    }
+};
+
+/*
  * Sum over elements
  *
  */
