@@ -666,6 +666,7 @@ public:
     double skewness();
     double curtosity();
     std::vector<double> resample(int);
+    // Function pointer kernel
     
     
 private:
