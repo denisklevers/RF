@@ -6,12 +6,13 @@
 
 /* 
  * File:   analyzer.cpp
- * Author: krefl
+ * Author: Dan
  * 
  * Created on October 15, 2016, 10:39 PM
  */
 
 #include "analyzer.h"
+#include "arr.h"
 #include "tools.h"
 #include <iostream>
 
@@ -44,5 +45,5 @@ doubledouble analyzer::averageAll(std::function<double(const arr2D<double>)> fun
         c++;
     }
  
-    return mean(rets);
+    return tools::mean(rets);
 }

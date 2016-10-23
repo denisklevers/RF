@@ -10,10 +10,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include "tools.h"
-
+#include "FiniteQueue.h"
 
 int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs) 
 {
+    // Deactivate logging for MC run
+    log = false;
+    
     // Set reward counter
     double R[4] = {0,0,0,0};
  
@@ -66,14 +69,18 @@ int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs)
         a = posOfFirstMax(R, 4, nac, 2);
     }
     
+    log = true;
+    
     return a;
 }
 
 
-simu::simu(IndexedData* data, int firstMin, int posUnit, double fillRate) {
-    Data = data;
-    lot  = posUnit;
-    CF   = coinFlipper(fillRate);
+simu::simu(IndexedData* data, int firstMin, double posValue, double fillRate, int logSize) {
+    Data    = data;
+    invSize = posValue;
+    L       = {new FiniteQueue<int>(logSize, 0),new FiniteQueue<double>(logSize, 0),new FiniteQueue<double>(logSize, 0)};
+    
+    CF      = coinFlipper(fillRate);
     
     reset(firstMin);
  
@@ -85,9 +92,11 @@ void simu::reset(int firstMin) {
     Day = d.A;
     N   = d.B;
     
+    S = {};
     S.day = Day;
     S.r = Day+firstMin;    
     
+    L = {};
 }
 
 void simu::reset(int day, int firstMin) {
@@ -96,8 +105,11 @@ void simu::reset(int day, int firstMin) {
     Day = d.A;
     N   = d.B;
     
+    S = {};
     S.day = Day;
     S.r   = Day+firstMin;   
+
+    L = {};
 }
 
 state simu::getState() {
@@ -137,11 +149,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                    ) 
               )
             {
-                Sin->PF.pos = lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = Sin->r-Day;
                 Sin->PF.EP = Oin->LMT; 
                 
-                Sin->rpnl -= commissions(lot, lot*Oin->LMT, 0, true);
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Oin->LMT, 0, true);
                 
                 return true;
             }
@@ -152,11 +164,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                 &&  Sin->PF.pos == 0
               )
             {
-                Sin->PF.pos = lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = Sin->r-Day;
                 Sin->PF.EP = Data->data[Sin->r-1][4]; // Take previous ASK (time of order send) 
                 
-                Sin->rpnl -= commissions(lot, lot*Sin->PF.EP, 0, false);
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Sin->PF.EP, 0, false);
                 
                 return true;
             }
@@ -170,11 +182,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                    ) 
               )
             {
-                Sin->PF.pos = -lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = S.r-Day;
                 Sin->PF.EP = Oin->LMT;
                     
-                Sin->rpnl -= commissions(lot, lot*Oin->LMT, 1, true);  
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Oin->LMT, 1, true);  
                 
                 return true;
             }
@@ -185,11 +197,11 @@ bool simu::processOrder(order* Oin, state* Sin) {
                 &&  Sin->PF.pos == 0
               )
             {
-                Sin->PF.pos = -lot;
+                Sin->PF.pos = Oin->pos;
                 Sin->PF.entryHM = Sin->r-Day;
                 Sin->PF.EP = Data->data[Sin->r-1][7]; // Take previous ASK (time of order send) 
                 
-                Sin->rpnl -= commissions(lot, lot*Sin->PF.EP, 0, false);
+                Sin->rpnl -= commissions(abs(Oin->pos), abs(Oin->pos)*Sin->PF.EP, 0, false);
                 
                 return true;
             }
@@ -309,7 +321,9 @@ state simu::next(order* O) {
     
     // Set new order if present (cancels old)
     if(O!=NULL) {
-        
+        // Log action
+        if(log) L.actions->in(O->action);
+   
         if(   O->action == 4       // Cancel command
            || (    O->action == 3  
                 && Sn.PF.pos == 0  // Invalid order
@@ -321,10 +335,24 @@ state simu::next(order* O) {
           )
         {
             // Cancel order (due to command)
-               Sn.AO = NULL;
+            Sn.AO = NULL;
+            
         } else {
+            
+            // Set pos size 
+            if(O->action == 3) {
+                O->pos = S.PF.pos;
+            }
+            
+            if((O->action == 1 || O->action == 2)) {
+                O->pos = (O->action == 1) ? calc_shares() : -calc_shares();
+            }
+            
             Sn.AO = O;
         }  
+    } else {
+        // Log null action
+        if(log) L.actions->in(0);
     } 
     
     // Process new order (if present)
@@ -332,12 +360,26 @@ state simu::next(order* O) {
     
     // Calc MID upnl (use Sn MID)
     Sn.upnl = Sn.PF.pos*((Data->data[Sn.r][4]+Data->data[Sn.r][7])/2 - Sn.PF.EP);
-   
+    Sn.upnl_p = Sn.upnl/invSize;
+    
+    //  Calc rpnl_p
+    Sn.rpnl_p = Sn.rpnl/invSize;
+    
+    // Add to logs
+    if(log && L.actions->size() > 0) {
+        L.upnls->in(Sn.upnl_p);
+        L.rpnls->in(Sn.rpnl_p);
+    }
+    
     // Set state
     S = Sn;
     
     return S;
 }
+
+int simu::calc_shares() {
+   return floor(invSize/((Data->data[S.r][4]+Data->data[S.r][7])/2));   
+} 
 
 double simu::commissions(int shares, double value, int type, bool LMT) {
     

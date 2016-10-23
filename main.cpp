@@ -15,11 +15,14 @@
 #include "hashmap.h"
 #include "LinkedList.h"
 #include "analyzer.h"
+
+#include "operators.h"
 /*
 #include "Visu.h"
 */
 
 using namespace std;
+using namespace ops;
 
 int main(int argc, char *argv[]) {
     cout << "Loading data...\n";
@@ -28,8 +31,23 @@ int main(int argc, char *argv[]) {
     int Nc = 10;
     int Nr = 152100;
   
-    IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
     
+    IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
+   
+    /*
+    
+    LinkedList<sca_op*> O;
+    O.add(new ops::mean);
+    
+    sca_op *X = *O.get(0);
+    
+    double test[3] = {1,2,3};
+    arr<double> A = {test,3};
+    
+    double Y = X->apply(A);
+    
+    cout << to_string(Y) << endl;
+    */
     /*
     
     analyzer Analy = analyzer(&data);
@@ -46,63 +64,43 @@ int main(int argc, char *argv[]) {
   
     */
   
+    
+    
+    
     int Nmc   = 1000;
-    int depth = 5;
+    int depth = 10;
     randUniInt randInt(0,4);
-    simu Sim = simu(&data, 0, 10, 0.85);
+    
+    simu Sim = simu(&data, 0, 5000, 0.85);
+    
     LinkedList<int> Alist; 
+    double P[] = {0,20,20,10};
     
     state S = Sim.getState();
-        
-   
+    
+    cout << S.toString() << endl;
+    
     while(!(Sim.EoD())) {
+    
+        int a = Sim.searchBestAction_MKT_naiveMC(P,10000,30);
         
-        double R[4] = {0,0,0,0};
-        
-        // MC runs
-        for(int m = 0; m < Nmc; m++) {
-            
-            Sim.setState(S);
-        
-            int r = randInt.next();
-        
-            if(S.PF.pos!=0) {
-                while(r==1 || r==2) {
-                    r = randInt.next();
-                }
-            }
-            
-            if(S.PF.pos==0) {
-                while(r==3) {
-                    r = randInt.next();
-                }
-            }
-            
-            order O = {r,1,0};
-            
-            // MC depth run
-            for(int i = 0; i < depth; i++) {
-                // Generate random order
-                Sim.next(&O);
-            
-                O.action = randInt.next();
-            }
-            
-            state T = Sim.getState();
-        
-            R[r] += T.upnl+T.rpnl;
-        }
-       
-        int a = posOfFirstMax<double>(R, 4);
         Alist.add(a);
+        
         order O = {a,1,0};
         
-        S = Sim.next(S, &O);
-        
+        if(a!=0) {
+            S = Sim.next(&O);
+        } 
+        else {
+            S = Sim.next(NULL);
+        } 
+           
         cout << S.toString() << endl;
-    } 
- 
+    }   
+    
     cout << Alist.toString() << endl;
+   
+   
     
     cout << "Done!";
     

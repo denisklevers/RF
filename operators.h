@@ -128,7 +128,57 @@ class sdev : public sca_op
     }
 };
 
+/*
+ * Sum over elements
+ *
+ */
+class sum : public sca_op 
+{
+    virtual double apply(arr<double> in) {
+        return tools::sum(in);
+    }
+};
 
+/*
+ * Min of elements
+ *
+ */
+class min : public sca_op
+{
+    virtual double apply(arr<double> in) {
+        return tools::min(in);
+    }
+};
+
+/*
+ * Max of elements
+ *
+ */
+class max : public sca_op
+{
+    virtual double apply(arr<double> in) {
+        return tools::max(in);
+    }
+};
+
+
+/*
+ * Auto-correlation
+ *
+ */
+class acorr : public sca_op 
+{
+    acorr(int lag) {
+        L = lag;
+    }
+    
+    virtual double apply(arr<double> in) {
+        return tools::autoCorrelation(in, L);
+    }
+    
+private:
+    int L;
+};
 
 
 

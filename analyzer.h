@@ -6,7 +6,6 @@
 
 /* 
  * File:   analyzer.h
- * Author: krefl
  *
  * Created on October 15, 2016, 10:39 PM
  */
@@ -15,6 +14,7 @@
 #define ANALYZER_H
 
 #include "tools.h"
+#include "arr.h"
 
 
 using namespace tools;

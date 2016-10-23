@@ -210,17 +210,18 @@ template <class A> class LinkedList
             removeAll();
         }
         
+        
         /*
          * Output
          */
         std::string toString() {
-            std::string s = "L: "+std::to_string(size())+"\n[ ";
+            std::string s = "[ ";
             
             for(int i = 0; i < size(); i++) {
                 s += std::to_string(*get(i))+" ";
             }
         
-            return s+"]";
+            return s+"]"+"("+std::to_string(size())+")";
         }
         
         
