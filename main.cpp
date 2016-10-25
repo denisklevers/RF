@@ -30,11 +30,36 @@ int main(int argc, char *argv[]) {
     // Init data
     int Nc = 10;
     int Nr = 152100;
-  
     
+    double values[4] = {121.1111,121.2,121.4,125.1343};
+            
+    arr<double> sample = {values,4};
+    
+    
+    emp_distribution<double> h(sample, 0.4);
+    
+    arr<value_freq> his;
+    his = h.get_histogramm();
+    
+ 
+    
+    printH(his);
+    
+    double add_values[3] = {118.485043,119.1111,127.130};
+    arr<double> av = {add_values,3};
+    
+    h.add_values(av);
+    h.show_data();
+    arr<value_freq> his1;
+    his1 = h.get_histogramm();
+    
+    
+    printH(his1);
+  
+  /*
     IndexedData data = loadAndIndexDataFromCSV("/Users/denis/Documents/University/Dropbox/Work/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
    
-    /*
+    
     
     LinkedList<sca_op*> O;
     O.add(new ops::mean);
@@ -64,16 +89,15 @@ int main(int argc, char *argv[]) {
   
     */
     
- 
     
-   
+ 
 
     int Nmc   = 1000;
     int depth = 10;
     randUniInt randInt(0,4);
-    
-    simu Sim = simu(&data, 0, 5000, 0.85,1);
     /*
+    simu Sim = simu(&data, 0, 5000, 0.85,1);
+    
     LinkedList<int> Alist; 
     double P[] = {0,20,20,10};
     

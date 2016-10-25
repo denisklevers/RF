@@ -68,8 +68,7 @@ template <class A> class LinkedList
          * 
          * @param in element to add
          */ 
-        
-        void add_front(A in) {
+        void addFirst(A in) {
             Node<A> *N = new Node<A>(in);
             
             if(head==NULL) {

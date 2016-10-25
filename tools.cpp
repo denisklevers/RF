@@ -281,11 +281,7 @@ void TemporaryFunction ()
 
 // Printing Histogramm:
 
-void printH(std::vector<value_freq> histo)
-{
-	for(int i = 0; i< histo.size(); i++)
-		std::cout << "Value X = " << histo.at(i).value <<  " : " << histo.at(i).frequency << " (Frequency)" << std::endl;
-}
+
 
 }
 
