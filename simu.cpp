@@ -78,8 +78,7 @@ int simu::searchBestAction_MKT_naiveMC(double penalties[], int depth, int runs)
 simu::simu(IndexedData* data, int firstMin, double posValue, double fillRate, int logSize) {
     Data    = data;
     invSize = posValue;
-    L       = {new FiniteQueue<int>(logSize, 0),new FiniteQueue<double>(logSize, 0),new FiniteQueue<double>(logSize, 0)};
-    
+    Lsize   = logSize;
     CF      = coinFlipper(fillRate);
     
     reset(firstMin);
@@ -96,7 +95,7 @@ void simu::reset(int firstMin) {
     S.day = Day;
     S.r = Day+firstMin;    
     
-    L = {};
+    L  = {new FiniteQueue<int>(Lsize, 0),new FiniteQueue<double>(Lsize, 0),new FiniteQueue<double>(Lsize, 0)};
 }
 
 void simu::reset(int day, int firstMin) {
@@ -109,7 +108,8 @@ void simu::reset(int day, int firstMin) {
     S.day = Day;
     S.r   = Day+firstMin;   
 
-    L = {};
+    L     = {new FiniteQueue<int>(Lsize, 0),new FiniteQueue<double>(Lsize, 0),new FiniteQueue<double>(Lsize, 0)};
+   
 }
 
 state simu::getState() {

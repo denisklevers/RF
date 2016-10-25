@@ -18,10 +18,16 @@
 #include <cstdlib>
 #include <iostream>
 #include "arr.h"
+#include <math.h>    
+#include "LinkedList.h"
+#include <iomanip>
 
 namespace tools {
 
 double** createDoubleArray2D(int Nr, int Nc);
+void     freeDoubleArray2D(double** A, int Nr);
+
+void wait(int ms);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
@@ -64,6 +70,10 @@ struct IndexedData
 
     int keyCol;
     hashmap<intint> index;
+    
+    ~IndexedData() {
+        freeDoubleArray2D(data,rows);
+    }
     
     arr2D<double> getSubMatrix(int r0, int c0, int Nr, int Nc) {
         double** A = createDoubleArray2D(Nr,Nc);
@@ -186,6 +196,9 @@ struct value_freq
 	double value;
 	int frequency;
         
+        value_freq(){
+        }
+        
         value_freq(double x, int n)
         {
             value = x;
@@ -226,7 +239,6 @@ template<typename T> bool inQ(T E, T in[], int size) {
 }
 
 
-void     freeDoubleArray2D(double** A, int Nr);
 
 template<typename T> int posOfFirstMax(T* in, int length) {
     
@@ -494,6 +506,32 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<boo
     return {m, std::sqrt(var/(c))}; // StDev or sample StDev ?
 }
 
+template<typename T> arr<T> normalize_via_mean(arr<T> in) {
+    
+    T* ret = new T[in.size];
+    
+    doubledouble m = mean(in);
+    
+    for(int i = 0; i < in.size; i++) {
+        ret[i] = (in[i] - m.x)/m.y;
+    }
+    
+    return {ret, in.size()};
+}
+
+template<typename T> arr<T> normalize_via_minmax(arr<T> in) {
+    
+    T* ret = new T[in.size];
+    
+    double min = min(in);
+    double max = max(in);
+    
+    for(int i = 0; i < in.size; i++) {
+        ret[i] = in[i]/(max-min);
+    }
+    
+    return {ret, in.size()};
+}
 
 
 template<typename T> double correlation(arr<T> A, arr<T> B, int lag = 0) {
@@ -567,7 +605,6 @@ void printV(std::vector<T> vec)
 		std::cout << vec[i] << std::endl;
 }
 
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
  
@@ -579,7 +616,7 @@ void printV(std::vector<T> vec)
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
 void        saveCSV(const char *filename, double** M, int Nr, int Nc);
 
-IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
+IndexedData* loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
 
 
 
@@ -650,29 +687,261 @@ private:
 	// double a, b;
 };
 
-
+template <class T>
 class emp_distribution{
     
 public:
-    emp_distribution(std::vector<double>);
+    emp_distribution(arr<T>, double bsize = 0.001);
+    emp_distribution(arr<T>, int);
     ~emp_distribution()
     {	
-	std::cout << "An empirical distribution has been destroyed." << std::endl;
+	//std::cout << "An empirical distribution has been destroyed." << std::endl;
     }
-    std::vector<value_freq> histogramm(int);
-    doubledouble min_max();
-    double mean();
-    double var();
-    double skewness();
-    double curtosity();
-    std::vector<double> resample(int);
-    // Function pointer kernel
     
+    void show_data();
+    
+    doubledouble min_max();
+    
+    arr<value_freq> get_histogramm();
+    
+    void add_values(arr<T>);
+    T mean();
+    T var();
+    T skewness();
+    T kurtosis();
+    // arr<T> resample(int);
+    // kernel for function pointer 
     
 private:
-    std::vector<double> sample;
+    LinkedList<value_freq> * histo;
+    T Min;
+    T Max;
+    double binsize;
     
+    int SampleSize;
 };
+
+
+
+template <class T>
+emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
+    
+    Min = min(input);
+    Max = max(input);
+    binsize= bsize;
+    
+    SampleSize = input.size;
+    
+    std::cout << std::fixed <<  std::setprecision(5) 
+              << "Distribution from sample: sample size = " << SampleSize <<  ", (min,max) = ("; 
+    std::cout << Min << " , " << Max << ")."<< std::endl;
+   
+    
+    // Create histogram for given binsize
+    
+    // Rounding
+    double rmin = floor(Min*1000)/1000.000;
+    double rmax = ceil(Max*1000)/1000.000;
+ 
+    
+    int N = ceil((rmax - rmin)/binsize);
+   
+    
+    std::cout << "Binned ("<< rmin << "," << rmin + N*bsize <<  ") by "<< N << " bins, size = " << bsize << "."<< std::endl;
+    
+    LinkedList<value_freq> * binlist = new LinkedList<value_freq> ();
+    
+    for(int i=0; i< N; i++){
+        binlist->add({rmin + i*binsize, 0});
+    }
+    
+    int k = 0;
+    for(int i=0; i< input.size; i++){
+        k = static_cast<int>((input[i] - rmin)/binsize);
+        binlist->get(k)->frequency ++;
+    }
+    
+    histo = binlist;
+    
+}
+
+template <class T>
+emp_distribution<T>::emp_distribution(arr<T> input, int N){
+    
+    
+    Min = min(input);
+    Max = max(input);
+    
+    SampleSize = input.size;
+    
+    std::cout << std::fixed <<  std::setprecision(5) 
+              << "Distribution from sample: sample size = " << SampleSize <<  ", (min,max) = ("; 
+    std::cout << Min << " , " << Max << ")."<< std::endl;
+    
+    // Create histogram for given number of bins
+    
+    // Rounding
+    double rmin = floor(Min*1000)/1000.000;
+    double rmax = ceil(Max*1000)/1000.000;
+    
+    binsize = (rmax - rmin)/N;
+    
+    std::cout << "Binned ("<< rmin << "," << rmin + N*binsize <<  ") by "<< N << " bins, size = " << binsize << "."<< std::endl;
+    
+    LinkedList<value_freq> * binlist = new LinkedList<value_freq> ();
+    
+    for(int i=0; i< N; i++){
+        binlist->add({rmin + i*binsize, 0}) ;
+    }
+    
+    int k = 0;
+    for(int i=0; i< input.size; i++){
+        k = static_cast<int>((input[i] - rmin)/binsize);
+        binlist->get(k)->frequency ++;
+    }
+   
+    histo = binlist;
+}
+
+template <class T>
+void emp_distribution<T>::show_data(){
+    std::cout << "Distribution of sample size " << SampleSize << " and (Min,Max) = (" << Min;
+    std::cout << "," << Max << ")." << std::endl;
+    std::cout << "(Mean,var,skewness,kurtosis) = ("<< mean()<< ","<< var() << ","<< skewness() << ","<< kurtosis() << ")." << std::endl;
+}
+
+template <class T>
+void emp_distribution<T>::add_values(arr<T> added){
+  
+    
+    T nMin = min(added);
+    T nMax = max(added);
+    
+    SampleSize += added.size;
+    int N = histo->size();
+    
+    // Rounding
+    double rmin = histo->get(0)->value;
+    double rmax = histo->get(N-1)->value;
+   
+    // Resizing of linked list if min or max exceed old min or max
+    
+    if(nMin < rmin){
+        int k = ceil((rmin - nMin)/binsize);
+        
+        for(int i=1; i<=k; i++)
+            histo->addFirst({rmin - i*binsize,0});
+        
+        Min = nMin;
+        rmin = histo->get(0)->value;
+    }
+     
+    if(nMax >= rmax + binsize){
+        int k = floor((nMax - rmax)/binsize);
+        
+        for(int i=1; i<=k; i++)
+            histo->add({rmax + i*binsize,0});
+        
+        Max = nMax;
+        rmax = histo->getLast()->value;
+    }
+ 
+   
+    // Appending the histogram
+   
+    int k = 0;
+    for(int i=0; i< added.size; i++){
+        k = static_cast<int>((added[i] - rmin)/binsize);
+        histo->get(k)->frequency ++;
+    }  
+    
+    
+    N = histo->size();
+    
+    
+    // Print updated distribution information.
+    std::cout << std::fixed <<  std::setprecision(5) 
+              << "Distribution updated: sample size = " << SampleSize <<  ", (min,max) = ("; 
+    std::cout << Min << " , " << Max << ")."<< std::endl;
+    std::cout << "Binned ("<< rmin << "," << rmax <<  ") by "<< N << " bins, size = " << binsize << "."<< std::endl;
+   
+}
+
+// Convert histogram given as linked list into array of value_freq pairs.
+
+template <class T>
+arr<value_freq> emp_distribution<T>::get_histogramm()
+{
+    int N = histo->size();
+    
+    value_freq* ret = new value_freq[N];
+   
+    for(int i=0; i < N; i++){
+        ret[i] = *(histo->get(i));
+    }
+    
+    return {ret,N};
+}
+
+// return min and max of current distribution
+
+template <class T>
+doubledouble emp_distribution<T>::min_max(){
+    return {Min,Max};
+}
+
+template <class T>
+T emp_distribution<T>::mean(){
+    double sum=0;
+    
+    int N = histo->size();
+    
+    for(int i=0; i < N; i++)
+	sum += (histo->get(i)->value) * (histo->get(i)->frequency);
+	
+    return sum/SampleSize ;
+}
+
+template <class T>
+T emp_distribution<T>::var(){
+    double sum=0;
+    
+    int N = histo->size();
+    T m = mean();
+    
+    for(int i=0; i < N; i++)
+	sum += pow(2,histo->get(i)->value - m) * (histo->get(i)->frequency);
+	
+    return sum/(SampleSize-1) ;
+}
+
+template <class T>
+T emp_distribution<T>::skewness(){
+    double sum=0;
+    
+    int N = histo->size();
+    T m = mean();
+    T sig = sqrt(var());
+    
+    for(int i=0; i < N; i++)
+	sum += pow(histo->get(i)->value - m,3)/pow(sig,3) * (histo->get(i)->frequency);
+	
+    return sum/SampleSize ;
+}
+
+template <class T>
+T emp_distribution<T>::kurtosis(){
+    double sum=0;
+    
+    int N = histo->size();
+    T m = mean();
+    T sig = sqrt(var());
+    
+    for(int i=0; i < N; i++)
+	sum += pow(histo->get(i)->value - m,4)/pow(sig,4) * (histo->get(i)->frequency);
+	
+    return sum/SampleSize ;
+}
 
 
 
@@ -702,9 +971,15 @@ std::vector<value_freq> HistogramMaker(std::vector<T> &sample, std::vector<T> sa
 
 // Printing Histogramm:
 
-void printH(std::vector<value_freq> histo);
-
+template <typename T>
+void printH(T histo)
+{
+	for(int i = 0; i< histo.size; i++)
+		std::cout << "Value X = " << histo[i].value <<  " : " << histo[i].frequency << " (Frequency)" << std::endl;
 }
+}
+
+
 
 #endif /* TOOLS_H */
 

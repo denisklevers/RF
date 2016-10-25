@@ -11,10 +11,18 @@
 #include "hashmap.h"
 #include "tools.h"
 #include <typeinfo>
-#include <algorithm>
+ #include <time.h>
 
 namespace tools {
 
+   
+void wait(int ms) {
+    struct timespec time;
+    time.tv_sec = ms / 1000;
+    time.tv_nsec = (ms % 1000) * (1000 * 1000);
+    nanosleep(&time,NULL);
+}
+   
 randUniInt::randUniInt(int l, int h) {
     
     dist = std::uniform_int_distribution<int>(l,h);
@@ -142,12 +150,12 @@ void saveCSV(const char *filename, double** M, int Nr, int Nc) {
 }
 
 
-IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol) {
+IndexedData* loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol) {
     double** M = createDoubleArray2D(Nr,Nc);
     
     loadCSV(filename, M, Nr, Nc, startPos);
     
-    IndexedData ret = {M, Nr, Nc, keyCol, hashmap<intint>()};
+    IndexedData* ret = new IndexedData{M, Nr, Nc, keyCol, hashmap<intint>()};
     
     // Index data
     int c = 1;
@@ -161,7 +169,7 @@ IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int st
             len.A = i-c;
             len.B = c;
            
-            ret.index.add(lastKey, len);
+            ret->index.add(lastKey, len);
             
             lastKey = M[i][keyCol];
             c = 0;
@@ -281,27 +289,7 @@ void TemporaryFunction ()
 
 // Printing Histogramm:
 
-void printH(std::vector<value_freq> histo)
-{
-	for(int i = 0; i< histo.size(); i++)
-		std::cout << "Value X = " << histo.at(i).value <<  " : " << histo.at(i).frequency << " (Frequency)" << std::endl;
-}
+
 
 }
 
-tools::emp_distribution::emp_distribution(std::vector<double> input)
-{
-    sample = input;
-}
-std::vector<tools::value_freq> tools::emp_distribution::histogramm(int N)
-{
-    double minS = *min_element(sample.begin(),sample.end());
-    double maxS = *max_element(sample.begin(),sample.end());
-    
-    double binsize = (maxS-minS)/N;
-    
-    
-    std::vector<tools::value_freq> vec {tools::value_freq(1,0)};
-    
-    return vec;
-}
