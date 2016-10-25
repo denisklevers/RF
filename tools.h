@@ -33,6 +33,12 @@ double** createDoubleArray2D(int Nr, int Nc);
  
  
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+enum printOrN{
+  quiet= 0,
+  loud,
+};
+
+
 enum relOp 
 {
     l,
@@ -341,7 +347,7 @@ template<typename T> double max(T* in, int length) {
 
 template<typename T> double max(arr<T> in) {
     
-    return max(in.data, in.size);
+    return max(in.data, in.length);
 }
 
 template<typename T> double min(T* in, int length) {
@@ -359,14 +365,14 @@ template<typename T> double min(T* in, int length) {
 
 template<typename T> double min(arr<T> in) {
     
-    return min(in.data, in.size);
+    return min(in.data, in.length);
 }
 
 template<typename T> T sum(arr<T> A) {
     
     T sum = A[1];
     
-    for(int i = 1; i < A.size; i++) {
+    for(int i = 1; i < A.length; i++) {
         sum += A[i];
     }
     
@@ -376,9 +382,9 @@ template<typename T> T sum(arr<T> A) {
 template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
    
     arr<T> A;
-    arr<T> ret = (A1.size > A2.size) ? (A = A2, copy(A1)) : (A = A1, copy(A2));
+    arr<T> ret = (A1.length > A2.length) ? (A = A2, copy(A1)) : (A = A1, copy(A2));
     
-    for(int i = 0; i < A.size; i++) {
+    for(int i = 0; i < A.length; i++) {
         ret.data[i] += A.data[i];
     }
     
@@ -386,21 +392,21 @@ template<typename T> arr<T> add(arr<T> A1, arr<T> A2) {
 }
 
 template<typename T> arr<T> d(arr<T> A, int lag) {
-    T* newA = new T[A.size-lag];
+    T* newA = new T[A.length-lag];
     
-    for(int i = lag; i < A.size;i++) {
+    for(int i = lag; i < A.length;i++) {
         newA[i-lag] = A[i] - A[i-lag];
     }
     
-    return {newA, A.size-lag};
+    return {newA, A.length-lag};
 }
 
 
 
 template<typename T> arr<T> d_p(arr<T> A, int lag) {
-    T* newA = new T[A.size-lag];
+    T* newA = new T[A.length-lag];
     
-    for(int i = lag; i <A.size;i++) {
+    for(int i = lag; i <A.length;i++) {
         if(A[i-lag]!= 0) {
             newA[i-lag] = (A[i] - A[i-lag])/A[i-lag];
         } else {
@@ -408,16 +414,16 @@ template<typename T> arr<T> d_p(arr<T> A, int lag) {
         }
     }
     
-    return {newA, A.size-lag};
+    return {newA, A.length-lag};
 }
 
 
 template<typename T> arr<T> copy(arr<T> A) {
-    T* newA = new T[A.size]; 
+    T* newA = new T[A.length]; 
    
-    std::copy(A.data, A.data+A.size, newA);
+    std::copy(A.data, A.data+A.length, newA);
         
-    arr<T> RA = {newA, A.size};
+    arr<T> RA = {newA, A.length};
     
     return RA;
 }
@@ -461,7 +467,7 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e) {
  */
 template<typename T> doubledouble mean(arr<T> A) {
    
-    return mean(A, 0, A.size);
+    return mean(A, 0, A.length);
 }
 
 
@@ -503,18 +509,18 @@ template<typename T> doubledouble mean(arr<T> A, int s, int e, std::function<boo
 
 
 template<typename T> double correlation(arr<T> A, arr<T> B, int lag = 0) {
-    if(A.size == B.size) {
-        doubledouble m_A = mean(A,lag,A.size);
-        doubledouble m_B = mean(B,0,B.size-lag);
+    if(A.length == B.length) {
+        doubledouble m_A = mean(A,lag,A.length);
+        doubledouble m_B = mean(B,0,B.length-lag);
 
         // Calc correlation
         double corr = 0;
    
-        for(int i = lag; i < A.size; i++) {
+        for(int i = lag; i < A.length; i++) {
             corr += (A[i]-m_A.x)*(B[i-lag]-m_B.x);
         }
         
-        corr /= m_A.y*m_B.y*(A.size-lag);
+        corr /= m_A.y*m_B.y*(A.length-lag);
         
         return corr;
     }
@@ -542,14 +548,14 @@ template<typename T> double autoCorrelation(arr<T> A, int lag) {
  *  
  */
 template<typename T> double autoCorrelation_filtered(arr<T> A, int lag, std::function<bool(T)> function) {
-    doubledouble m_A = mean(A,lag,A.size);
-    doubledouble m_B = mean(A,0,A.size-lag, function); // Note: filtered mean
+    doubledouble m_A = mean(A,lag,A.length);
+    doubledouble m_B = mean(A,0,A.length-lag, function); // Note: filtered mean
     
     // Calc correlation
     double acorr = 0;
     int c = 0;
     
-    for(int i = lag; i < A.size; i++) {
+    for(int i = lag; i < A.length; i++) {
         if(function(A[i-lag])) {
             acorr += (A[i]-m_A.x)*(A[i-lag]-m_B.x);
             c++;
@@ -660,6 +666,7 @@ template <class T>
 class emp_distribution{
     
 public:
+    emp_distribution();
     emp_distribution(arr<T>, double bsize = 0.001);
     emp_distribution(arr<T>, int);
     ~emp_distribution()
@@ -673,7 +680,9 @@ public:
     
     arr<value_freq> get_histogramm();
     
-    void add_values(arr<T>);
+    emp_distribution operator+(emp_distribution&);
+    
+    void add_values(arr<T>, printOrN state = loud);
     T mean();
     T var();
     T skewness();
@@ -690,7 +699,9 @@ private:
     int SampleSize;
 };
 
-
+template <class T>
+emp_distribution<T>::emp_distribution(){
+}
 
 template <class T>
 emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
@@ -699,7 +710,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
     Max = max(input);
     binsize= bsize;
     
-    SampleSize = input.size;
+    SampleSize = input.length;
     
     std::cout << std::fixed <<  std::setprecision(5) 
               << "Distribution from sample: sample size = " << SampleSize <<  ", (min,max) = ("; 
@@ -725,7 +736,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
     }
     
     int k = 0;
-    for(int i=0; i< input.size; i++){
+    for(int i=0; i< input.length; i++){
         k = static_cast<int>((input[i] - rmin)/binsize);
         binlist->get(k)->frequency ++;
     }
@@ -741,7 +752,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, int N){
     Min = min(input);
     Max = max(input);
     
-    SampleSize = input.size;
+    SampleSize = input.length;
     
     std::cout << std::fixed <<  std::setprecision(5) 
               << "Distribution from sample: sample size = " << SampleSize <<  ", (min,max) = ("; 
@@ -764,7 +775,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, int N){
     }
     
     int k = 0;
-    for(int i=0; i< input.size; i++){
+    for(int i=0; i< input.length; i++){
         k = static_cast<int>((input[i] - rmin)/binsize);
         binlist->get(k)->frequency ++;
     }
@@ -772,21 +783,71 @@ emp_distribution<T>::emp_distribution(arr<T> input, int N){
     histo = binlist;
 }
 
+
+/* +-operator for two distributions */
+template <class T>
+emp_distribution<T>  emp_distribution<T>::operator+(emp_distribution& d){
+    
+    // Copy first distribution to distSum.
+    
+    // TO DO: Write as copy constructor later.
+    
+    double binsize1 = this -> binsize;
+    double binsize2 = d.binsize;
+    
+    arr<value_freq> finerHisto;
+    
+    emp_distribution distSum;
+    
+    if(binsize1 > binsize2){
+        distSum.histo = this -> histo;
+        distSum.Min = this -> Min;
+        distSum.Max = this -> Max;
+        distSum.binsize = this -> binsize;
+        distSum.SampleSize = this -> SampleSize;
+        
+        finerHisto = d.get_histogramm();
+    } else{
+        distSum.histo = d.histo;
+        distSum.Min = d.Min;
+        distSum.Max = d.Max;
+        distSum.binsize = d.binsize;
+        distSum.SampleSize = d.SampleSize;
+        
+        finerHisto = this->get_histogramm();
+    }
+    
+    int len = finerHisto.size();
+    
+    for(int i = 0; i < len; i++){
+        int binHeight = finerHisto[i].frequency;
+        
+        for(int j = 0; j <binHeight; j++){
+            double temp[1]={finerHisto[i].value};
+            distSum.add_values({temp,1}, quiet);
+        }
+        
+    }
+    
+    return distSum;
+}
+
+
 template <class T>
 void emp_distribution<T>::show_data(){
-    std::cout << "Distribution of sample size " << SampleSize << " and (Min,Max) = (" << Min;
+    std::cout << "Distribution of sample size " << SampleSize << " and bin lefts at (Min,Max) = (" << Min;
     std::cout << "," << Max << ")." << std::endl;
     std::cout << "(Mean,var,skewness,kurtosis) = ("<< mean()<< ","<< var() << ","<< skewness() << ","<< kurtosis() << ")." << std::endl;
 }
 
 template <class T>
-void emp_distribution<T>::add_values(arr<T> added){
+void emp_distribution<T>::add_values(arr<T> added, printOrN state){
   
     
     T nMin = min(added);
     T nMax = max(added);
     
-    SampleSize += added.size;
+    SampleSize += added.length;
     int N = histo->size();
     
     // Rounding
@@ -819,7 +880,7 @@ void emp_distribution<T>::add_values(arr<T> added){
     // Appending the histogram
    
     int k = 0;
-    for(int i=0; i< added.size; i++){
+    for(int i=0; i< added.length; i++){
         k = static_cast<int>((added[i] - rmin)/binsize);
         histo->get(k)->frequency ++;
     }  
@@ -829,11 +890,12 @@ void emp_distribution<T>::add_values(arr<T> added){
     
     
     // Print updated distribution information.
-    std::cout << std::fixed <<  std::setprecision(5) 
+    if(state == loud){
+        std::cout << std::fixed <<  std::setprecision(5) 
               << "Distribution updated: sample size = " << SampleSize <<  ", (min,max) = ("; 
-    std::cout << Min << " , " << Max << ")."<< std::endl;
-    std::cout << "Binned ("<< rmin << "," << rmax <<  ") by "<< N << " bins, size = " << binsize << "."<< std::endl;
-   
+        std::cout << Min << " , " << Max << ")."<< std::endl;
+        std::cout << "Binned ("<< rmin << "," << rmax <<  ") by "<< N << " bins, size = " << binsize << "."<< std::endl;
+    }
 }
 
 // Convert histogram given as linked list into array of value_freq pairs.
@@ -943,7 +1005,7 @@ std::vector<value_freq> HistogramMaker(std::vector<T> &sample, std::vector<T> sa
 template <typename T>
 void printH(T histo)
 {
-	for(int i = 0; i< histo.size; i++)
+	for(int i = 0; i< histo.size(); i++)
 		std::cout << "Value X = " << histo[i].value <<  " : " << histo[i].frequency << " (Frequency)" << std::endl;
 }
 }
