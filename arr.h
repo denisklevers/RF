@@ -17,19 +17,22 @@
 template <typename T> struct arr
 {
     T* data;
-    int size;
+    int length;
     
     T &operator[](int i) {
-        if(i < size) {
+        if(i < length) {
             return data[i];
         } 
         
         throw std::out_of_range("arr::access - Index out of range");
     }
    
+    int size(){
+        return length;
+    }
     
     void multiply(T C) {
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < length; i++) {
             data[i] *= C;
         }
     }
@@ -43,19 +46,19 @@ template <typename T> struct arr
     }
     
     void add(T C) {
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < length; i++) {
             data[i] += C;
         }
     }
     
     void sub(T C) {
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < length; i++) {
             data[i] -= C;
         }
     }
     
     void set(T C) {
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < length; i++) {
             data[i] = C;
         }
     }
@@ -65,15 +68,15 @@ template <typename T> struct arr
      *  f: <T> -> <T>
      */
     void apply(T (*function)(T)) {
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < length; i++) {
             data[i] = function(data[i]);
         }
     }
     
     std::string toString() {
-        std::string s = "L: "+std::to_string(size)+"\n[ ";
+        std::string s = "L: "+std::to_string(length)+"\n[ ";
         
-        for(int i = 0; i < size; i++) {
+        for(int i = 0; i < length; i++) {
             s += std::to_string(data[i])+" ";
         }
         
