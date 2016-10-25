@@ -44,7 +44,7 @@ template <class A> class LinkedList
             throw std::out_of_range("LinkedList::access - Index out of range");
         }
         /**
-         * Adds element to list
+         * Adds element to back of list
          * 
          * @param in element to add
          */
@@ -59,6 +59,26 @@ template <class A> class LinkedList
             }
    
             tail = N;
+            
+            elements++;
+        }
+        
+        /**
+         * Adds element to front of list
+         * 
+         * @param in element to add
+         */ 
+        void addFirst(A in) {
+            Node<A> *N = new Node<A>(in);
+            
+            if(head==NULL) {
+                head = N;
+            } else {
+                N->next = head;
+                head->prev = N;
+            }
+   
+            head = N;
             
             elements++;
         }

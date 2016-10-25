@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     int Nc = 10;
     int Nr = 152100;
   
-   
+ 
     //IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
     
     //cout << data.index.getKeySet().toString();
@@ -92,15 +92,10 @@ int main(int argc, char *argv[]) {
     };
   
     */
-  
-    
-    /*
-    
-    int Nmc   = 1000;
+/*    
+   int Nmc   = 1000;
     int depth = 10;
     randUniInt randInt(0,4);
-    
-    simu Sim = simu(&data, 60, 5000, 0.85, 5);
     
     LinkedList<int> Alist; 
     double P[] = {0,20,20,10};

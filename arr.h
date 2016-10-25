@@ -26,7 +26,7 @@ template <typename T> struct arr
         
         throw std::out_of_range("arr::access - Index out of range");
     }
-    
+   
     
     void multiply(T C) {
         for(int i = 0; i < size; i++) {
