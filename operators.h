@@ -80,10 +80,10 @@ public:
     
     virtual arr<double> apply(arr<double> in) 
     {
-        double* data = new double[in.size-W+1];
+        double* data = new double[in.length-W+1];
         
         // Calc moving average
-        for(int i = W-1; i < in.size; i++) {
+        for(int i = W-1; i < in.length; i++) {
             
             // Calc mean
             double m = 0;
@@ -94,7 +94,7 @@ public:
             data[i-W+1] = m/W;
         }
         
-        return {data, in.size-W+1};
+        return {data, in.length-W+1};
     }
     
 private:
