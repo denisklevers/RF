@@ -15,8 +15,10 @@
 #include "hashmap.h"
 #include "LinkedList.h"
 #include "analyzer.h"
+#include "arr.h"
 
 #include "operators.h"
+#include "Runner.h"
 /*
 #include "Visu.h"
 */
@@ -25,15 +27,42 @@ using namespace std;
 using namespace ops;
 
 int main(int argc, char *argv[]) {
-    cout << "Loading data...\n";
     
     // Init data
     int Nc = 10;
     int Nr = 152100;
   
-    
-    IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
    
+    //IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
+    
+    //cout << data.index.getKeySet().toString();
+    
+    
+    Runner R(8, "/Users/krefl/data");
+    
+    auto C = [](simu* Sim) 
+    {
+        
+        double P[] = {0,20,20,10};
+   
+        int a = Sim->searchBestAction_MKT_naiveMC(P,1000,30);
+        
+        order O = {a,1,0};
+        
+        if(a!=0) {
+            Sim->next(&O);
+        } 
+        else {
+            Sim->next(NULL);
+        } 
+        
+        // sim->next has to be called, otherwise endless loop !!!
+        
+    };
+    
+    R.run(C);
+    
+    
     /*
     
     LinkedList<sca_op*> O;
@@ -65,13 +94,13 @@ int main(int argc, char *argv[]) {
     */
   
     
-    
+    /*
     
     int Nmc   = 1000;
     int depth = 10;
     randUniInt randInt(0,4);
     
-    simu Sim = simu(&data, 0, 5000, 0.85);
+    simu Sim = simu(&data, 60, 5000, 0.85, 5);
     
     LinkedList<int> Alist; 
     double P[] = {0,20,20,10};
@@ -82,7 +111,7 @@ int main(int argc, char *argv[]) {
     
     while(!(Sim.EoD())) {
     
-        int a = Sim.searchBestAction_MKT_naiveMC(P,10000,30);
+        int a = Sim.searchBestAction_MKT_naiveMC(P,1000,30);
         
         Alist.add(a);
         
@@ -95,12 +124,12 @@ int main(int argc, char *argv[]) {
             S = Sim.next(NULL);
         } 
            
-        cout << S.toString() << endl;
+        cout << S.toString() << endl;       
     }   
     
     cout << Alist.toString() << endl;
    
-   
+   */
     
     cout << "Done!";
     

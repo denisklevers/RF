@@ -74,6 +74,7 @@ struct state {
 
 class simu {
 public:
+    simu() {};
     simu(IndexedData* data, int firstMin, double posValue, double fillRate, int logSize);
     
     void reset(int firstMin);          // Reset and start @ random day
@@ -119,6 +120,7 @@ private:
     randUniInt  randInt = randUniInt(0,3); // Random uniform number generator (for MC command runs)
     
     simuLog L = {}; 
+    int Lsize;
     bool log = true;
     
     bool processOrder(order* Oin, state* Sin); // Returns true if Oin filled

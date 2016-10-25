@@ -22,6 +22,9 @@
 namespace tools {
 
 double** createDoubleArray2D(int Nr, int Nc);
+void     freeDoubleArray2D(double** A, int Nr);
+
+void wait(int ms);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
@@ -64,6 +67,10 @@ struct IndexedData
 
     int keyCol;
     hashmap<intint> index;
+    
+    ~IndexedData() {
+        freeDoubleArray2D(data,rows);
+    }
     
     arr2D<double> getSubMatrix(int r0, int c0, int Nr, int Nc) {
         double** A = createDoubleArray2D(Nr,Nc);
@@ -215,7 +222,6 @@ template<typename T> bool inQ(T E, T in[], int size) {
 }
 
 
-void     freeDoubleArray2D(double** A, int Nr);
 
 template<typename T> int posOfFirstMax(T* in, int length) {
     
@@ -582,7 +588,6 @@ void printV(std::vector<T> vec)
 		std::cout << vec[i] << std::endl;
 }
 
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  
  
@@ -594,7 +599,7 @@ void printV(std::vector<T> vec)
 void        loadCSV(const char *filename, double** M, int Nr, int Nc, int startPos);
 void        saveCSV(const char *filename, double** M, int Nr, int Nc);
 
-IndexedData loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
+IndexedData* loadAndIndexDataFromCSV(const char *filename, int Nr, int Nc, int startPos, int keyCol);
 
 
 
@@ -698,6 +703,8 @@ std::vector<value_freq> HistogramMaker(std::vector<T> &sample, std::vector<T> sa
 void printH(std::vector<value_freq> histo);
 
 }
+
+
 
 #endif /* TOOLS_H */
 
