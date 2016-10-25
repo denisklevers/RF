@@ -32,29 +32,28 @@ int main(int argc, char *argv[]) {
     int Nr = 152100;
     
     double values[4] = {121.1111,121.2,121.4,125.1343};
-            
     arr<double> sample = {values,4};
-    
-    
     emp_distribution<double> h(sample, 0.4);
     
-    arr<value_freq> his;
-    his = h.get_histogramm();
-    
- 
-    
+    arr<value_freq> his= h.get_histogramm();
     printH(his);
     
-    double add_values[3] = {118.485043,119.1111,127.130};
-    arr<double> av = {add_values,3};
+    double values1[3] = {118.485043,119.1111,127.130};
+    arr<double> sample1 = {values1,3};
+    emp_distribution<double> h1(sample1, 0.8);
     
-    h.add_values(av);
-    h.show_data();
-    arr<value_freq> his1;
-    his1 = h.get_histogramm();
-    
-    
+  
+    arr<value_freq> his1= h1.get_histogramm();
     printH(his1);
+    
+    emp_distribution<double> sum = h + h1;
+    
+    arr<value_freq> hisSum= sum.get_histogramm();
+    
+    cout << "Sum histogram" << endl;
+    printH(hisSum);
+    
+    sum.show_data();
   
   /*
     IndexedData data = loadAndIndexDataFromCSV("/Users/denis/Documents/University/Dropbox/Work/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
