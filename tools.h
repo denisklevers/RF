@@ -741,7 +741,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
     Max = max(input);
     binsize= bsize;
     
-    SampleSize = input.length;
+    SampleSize = input.size();
     
     std::cout << std::fixed <<  std::setprecision(5) 
               << "Distribution from sample: sample size = " << SampleSize <<  ", (min,max) = ("; 
@@ -750,24 +750,28 @@ emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
     
     // Create histogram for given binsize
     
-    // Rounding
-    double rmin = floor(Min*1000)/1000.000;
-    double rmax = ceil(Max*1000)/1000.000;
+    // Finding positions of bin_lefts
+    
+    int OffsetTo0 = static_cast<int>((Min - binsize/2)/binsize);
+    double rmin = binsize/2 + OffsetTo0*binsize;
+    int LastBin= static_cast<int>((Max - rmin)/binsize);
+    double rmax = rmin + LastBin*binsize;
  
     
-    int N = ceil((rmax - rmin)/binsize);
+    int N = (rmax - rmin)/binsize + 1;
    
     
-    std::cout << "Binned ("<< rmin << "," << rmin + N*bsize <<  ") by "<< N << " bins, size = " << bsize << "."<< std::endl;
+    std::cout << "First and last bin lefts: ("<< rmin << "," << rmax <<  "), binned by "<< N << " bins, size = " << bsize << "."<< std::endl;
     
     LinkedList<value_freq> * binlist = new LinkedList<value_freq> ();
     
+    // Setting bin centers
     for(int i=0; i< N; i++){
-        binlist->add({rmin + i*binsize, 0});
+        binlist->add({rmin + (i + 0.5)*binsize, 0});
     }
     
     int k = 0;
-    for(int i=0; i< input.length; i++){
+    for(int i=0; i< input.size(); i++){
         k = static_cast<int>((input[i] - rmin)/binsize);
         binlist->get(k)->frequency ++;
     }
@@ -783,30 +787,35 @@ emp_distribution<T>::emp_distribution(arr<T> input, int N){
     Min = min(input);
     Max = max(input);
     
-    SampleSize = input.length;
+    SampleSize = input.size();
     
     std::cout << std::fixed <<  std::setprecision(5) 
               << "Distribution from sample: sample size = " << SampleSize <<  ", (min,max) = ("; 
     std::cout << Min << " , " << Max << ")."<< std::endl;
     
     // Create histogram for given number of bins
+ 
+    binsize = (Max - Min)/N;
     
-    // Rounding
-    double rmin = floor(Min*1000)/1000.000;
-    double rmax = ceil(Max*1000)/1000.000;
+    // Finding bin positions
     
-    binsize = (rmax - rmin)/N;
+    int OffsetTo0 = static_cast<int>((Min - binsize/2)/binsize);
+    double rmin = binsize/2 + OffsetTo0*binsize;
+    int LastBin= static_cast<int>((Max - rmin)/binsize);
+    double rmax = rmin + LastBin*binsize;
     
-    std::cout << "Binned ("<< rmin << "," << rmin + N*binsize <<  ") by "<< N << " bins, size = " << binsize << "."<< std::endl;
+    
+    std::cout << "First and last bin lefts: ("<< rmin << "," << rmin + N*binsize <<  "), binned by "<< N << " bins, size = " << binsize << "."<< std::endl;
     
     LinkedList<value_freq> * binlist = new LinkedList<value_freq> ();
     
+    // Setting bin centers
     for(int i=0; i< N; i++){
-        binlist->add({rmin + i*binsize, 0}) ;
+        binlist->add({rmin + (i + 0.5)*binsize, 0}) ;
     }
     
     int k = 0;
-    for(int i=0; i< input.length; i++){
+    for(int i=0; i< input.size(); i++){
         k = static_cast<int>((input[i] - rmin)/binsize);
         binlist->get(k)->frequency ++;
     }
@@ -831,19 +840,11 @@ emp_distribution<T>  emp_distribution<T>::operator+(emp_distribution& d){
     emp_distribution distSum;
     
     if(binsize1 > binsize2){
-        distSum.histo = this -> histo;
-        distSum.Min = this -> Min;
-        distSum.Max = this -> Max;
-        distSum.binsize = this -> binsize;
-        distSum.SampleSize = this -> SampleSize;
+        distSum = *this;
         
         finerHisto = d.get_histogramm();
     } else{
-        distSum.histo = d.histo;
-        distSum.Min = d.Min;
-        distSum.Max = d.Max;
-        distSum.binsize = d.binsize;
-        distSum.SampleSize = d.SampleSize;
+        distSum = d;
         
         finerHisto = this->get_histogramm();
     }
@@ -882,8 +883,8 @@ void emp_distribution<T>::add_values(arr<T> added, printOrN state){
     int N = histo->size();
     
     // Rounding
-    double rmin = histo->get(0)->value;
-    double rmax = histo->get(N-1)->value;
+    double rmin = histo->get(0)->value - 0.5*binsize;
+    double rmax = histo->get(N-1)->value - 0.5*binsize;
    
     // Resizing of linked list if min or max exceed old min or max
     
@@ -891,20 +892,20 @@ void emp_distribution<T>::add_values(arr<T> added, printOrN state){
         int k = ceil((rmin - nMin)/binsize);
         
         for(int i=1; i<=k; i++)
-            histo->addFirst({rmin - i*binsize,0});
+            histo->addFirst({rmin - i*binsize + 0.5 * binsize,0});
         
         Min = nMin;
-        rmin = histo->get(0)->value;
+        rmin = histo->get(0)->value - 0.5*binsize;
     }
      
     if(nMax >= rmax + binsize){
         int k = floor((nMax - rmax)/binsize);
         
         for(int i=1; i<=k; i++)
-            histo->add({rmax + i*binsize,0});
+            histo->add({rmax + i*binsize + 0.5 * binsize,0});
         
         Max = nMax;
-        rmax = histo->getLast()->value;
+        rmax = histo->getLast()->value - 0.5*binsize;
     }
  
    

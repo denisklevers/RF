@@ -36,8 +36,25 @@ int main(int argc, char *argv[]) {
     //IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
     
     //cout << data.index.getKeySet().toString();
+     
+    double data[3]={12.34,14.2,15.1445};
+    double data1[4]={12.2,14.4,15.3245,16.1};
     
+    emp_distribution<double> h({data,3},0.2);
+    emp_distribution<double> h1({data1,4},0.2);
     
+    emp_distribution<double> sum = h+h1;
+    
+    arr<value_freq> hist=h.get_histogramm();
+    printH(hist);
+    cout << "new"<< endl;
+    arr<value_freq> hist1=h1.get_histogramm();
+    printH(hist1);
+    cout << "new"<< endl;
+    arr<value_freq> hist2=sum.get_histogramm();
+    printH(hist2);
+    
+    /*
     Runner R(8, "/Users/krefl/data");
     
     auto C = [](simu* Sim) 
@@ -61,7 +78,7 @@ int main(int argc, char *argv[]) {
     };
     
     R.run(C);
-    
+    */
     
     /*
     
