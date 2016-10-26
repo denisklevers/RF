@@ -758,7 +758,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
     double rmax = rmin + LastBin*binsize;
  
     
-    int N = (rmax - rmin)/binsize + 1;
+    int N = (rmax-rmin)/binsize + 1;
    
     
     std::cout << "First and last bin lefts: ("<< rmin << "," << rmax <<  "), binned by "<< N << " bins, size = " << bsize << "."<< std::endl;
@@ -766,6 +766,7 @@ emp_distribution<T>::emp_distribution(arr<T> input, double bsize){
     LinkedList<value_freq> * binlist = new LinkedList<value_freq> ();
     
     // Setting bin centers
+    
     for(int i=0; i< N; i++){
         binlist->add({rmin + (i + 0.5)*binsize, 0});
     }

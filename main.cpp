@@ -32,12 +32,13 @@ int main(int argc, char *argv[]) {
     int Nc = 10;
     int Nr = 152100;
   
+    
  
     //IndexedData data = loadAndIndexDataFromCSV("/Users/krefl/data/NY_M_AMZN_USD.csv", Nr, Nc, 1, 1);
     
     //cout << data.index.getKeySet().toString();
      
-    double data[3]={12.34,14.2,15.1445};
+    double data[3]={12.14,14.2,15.1445};
     double data1[4]={12.2,14.4,15.3245,16.1};
     
     emp_distribution<double> h({data,3},0.2);
