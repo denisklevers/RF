@@ -63,7 +63,7 @@ void Runner::run(std::function<void(simu*)> func) { // Do via Lambda expression 
       
         p++;
         
-    } while( p < keys.size );
+    } while( p < keys.size() );
      
     // Wait until all threads are finished before
     while(!threadsFinishedQ()) {
